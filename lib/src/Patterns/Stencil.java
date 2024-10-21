@@ -10,10 +10,35 @@ public class Stencil {
 
     private final int[] shape;
     private final FlatNumArray activations;
-    private final Function<Collection,Number> computeFunction;
+    private final Function<Collection<Number>,Number> computeFunction;
     private final boolean weighted;
 
-    public Stencil(int[] shape, ArrayList<?> activations, Function<Collection,Number> function) {
+    public Stencil(int[] shape, Number[] activations, Function<Collection<Number>,Number> function) {
+        this.shape = shape;
+        this.activations = new FlatNumArray(activations);
+        this.computeFunction = function;
+
+        weighted = checkIfWeighted();
+    }
+
+    public Stencil(int[] shape, Number[][] activations, Function<Collection<Number>,Number> function) {
+        this.shape = shape;
+        this.activations = new FlatNumArray(activations);
+        this.computeFunction = function;
+
+        weighted = checkIfWeighted();
+    }
+
+    public Stencil(int[] shape, Number[][][] activations, Function<Collection<Number>,Number> function) {
+        this.shape = shape;
+        this.activations = new FlatNumArray(activations);
+        this.computeFunction = function;
+
+        weighted = checkIfWeighted();
+    }
+
+
+    public Stencil(int[] shape, ArrayList<?> activations, Function<Collection<Number>,Number> function) {
         this.shape = shape;
         this.activations = new FlatNumArray(shape, activations);
         this.computeFunction = function;
@@ -33,7 +58,7 @@ public class Stencil {
         return shape;
     }
 
-    public Function<Collection,Number> getComputeFunction() {
+    public Function<Collection<Number>,Number> getComputeFunction() {
         return computeFunction;
     }
 

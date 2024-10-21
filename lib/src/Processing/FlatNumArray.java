@@ -2,16 +2,85 @@ package Processing;
 
 
 import Exceptions.IndexShapeException;
+import Exceptions.InvalidArrayShapeException;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public class FlatNumArray implements Iterable<Number> {
 
     private final int[] shape;
     private final Number[] array;
     private Integer arrayLength;
+
+    /**
+     * 1D flat array constructor
+     * @param data
+     */
+    public FlatNumArray(Number[] data) {
+        shape = new int[] {data.length};
+        array = data.clone();
+        arrayLength = array.length;
+    }
+
+    /**
+     * 2D flat array constructor
+     * @param data
+     */
+    public FlatNumArray(Number[][] data) {
+        shape = new int[] {data.length, data[0].length};
+        for (Number[] arr : data){
+            if (arr.length != shape[1]){
+                throw new InvalidArrayShapeException(
+                        String.format("Input 2D array does not have a consistent shape," +
+                                "as sub arrays have different lengths"));
+            }
+        }
+        // Create flat array
+        arrayLength = shape[0] * shape[1];
+        array = new Number[arrayLength];
+        // Insert all array values
+        int i = 0;
+        for (Number[] arr : data){
+            for (Number v : arr){
+                array[i++] = v;
+            }
+        }
+    }
+
+    /**
+     * 3D flat array constructor
+     * @param data
+     */
+    public FlatNumArray(Number[][][] data) {
+        shape = new int[] {data.length, data[0].length, data[0][0].length};
+        for (Number[][] outer_arr : data){
+            if (outer_arr.length != shape[1]){
+                throw new InvalidArrayShapeException(
+                        String.format("Input 3D array does not have a consistent shape," +
+                                "as sub arrays have different lengths"));
+            }
+            for (Number[] arr : outer_arr){
+                if (arr.length != shape[2]){
+                    throw new InvalidArrayShapeException(
+                            String.format("Input 3D array does not have a consistent shape," +
+                                    "as sub arrays have different lengths"));
+                }
+            }
+        }
+        // Create flat array
+        arrayLength = shape[0] * shape[1] * shape[2];
+        array = new Number[arrayLength];
+        // Insert all array values
+        int i = 0;
+        for (Number[][] outer_arr : data){
+            for (Number[] arr : outer_arr){
+                for (Number v : arr){
+                    array[i++] = v;
+                }
+            }
+        }
+    }
 
     public FlatNumArray(int[] shape, ArrayList<?> data) {
         this.shape = shape;
@@ -20,7 +89,7 @@ public class FlatNumArray implements Iterable<Number> {
         for (Integer dim : shape) {
             arrayLength *= dim;
         }
-        array = flatten(data).toArray(new Number[arrayLength]);
+        array = flatten_ND(data).toArray(new Number[arrayLength]);
     }
 
     /**
@@ -61,16 +130,16 @@ public class FlatNumArray implements Iterable<Number> {
      * @param data N-dimensional ArrayList
      * @return 1 Dimensional ArrayList
      */
-    private List<Number> flatten(ArrayList<?> data) {
-        return data.stream()
-                .flatMap(element -> {
-                    if (element instanceof ArrayList<?>) {
-                        return flatten((ArrayList<?>) element).stream();
-                    } else{
-                        return Stream.of((Number) element);
-                    }
-                } )
-                .toList();
+    private List<?> flatten_ND(Collection<?> data) {
+        List<Object> list = new ArrayList<>();
+        for (Object element : data) {
+            if (element instanceof Collection<?>) {
+                list.addAll(flatten_ND((Collection<?>) element));
+            } else{
+                list.add(element);
+            }
+        }
+        return list;
     }
 
     @Override
