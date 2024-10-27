@@ -2,49 +2,49 @@ package Patterns;
 
 import Processing.FlatNumArray;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Function;
 
 public class Stencil {
 
-    private final int[] shape;
+    private final Integer[] shape;
     private final FlatNumArray activations;
     private final Function<Collection<Number>,Number> computeFunction;
     private final boolean weighted;
 
-    public Stencil(int[] shape, Number[] activations, Function<Collection<Number>,Number> function) {
-        this.shape = shape;
-        this.activations = new FlatNumArray(activations);
-        this.computeFunction = function;
-
-        weighted = checkIfWeighted();
-    }
-
-    public Stencil(int[] shape, Number[][] activations, Function<Collection<Number>,Number> function) {
-        this.shape = shape;
-        this.activations = new FlatNumArray(activations);
-        this.computeFunction = function;
-
-        weighted = checkIfWeighted();
-    }
-
-    public Stencil(int[] shape, Number[][][] activations, Function<Collection<Number>,Number> function) {
-        this.shape = shape;
-        this.activations = new FlatNumArray(activations);
-        this.computeFunction = function;
-
-        weighted = checkIfWeighted();
-    }
-
-
-    public Stencil(int[] shape, ArrayList<?> activations, Function<Collection<Number>,Number> function) {
+    public Stencil(Integer[] shape, Number[] activations, Function<Collection<Number>,Number> function) {
         this.shape = shape;
         this.activations = new FlatNumArray(shape, activations);
         this.computeFunction = function;
 
         weighted = checkIfWeighted();
     }
+
+    public Stencil(Integer[] shape, Number[][] activations, Function<Collection<Number>,Number> function) {
+        this.shape = shape;
+        this.activations = new FlatNumArray(shape, activations);
+        this.computeFunction = function;
+
+        weighted = checkIfWeighted();
+    }
+
+    public Stencil(Integer[] shape, Number[][][] activations, Function<Collection<Number>,Number> function) {
+        this.shape = shape;
+        this.activations = new FlatNumArray(shape, activations);
+        this.computeFunction = function;
+
+        weighted = checkIfWeighted();
+    }
+
+    /* N-dimensional constructor
+    public Stencil(Integer[] shape, ArrayList<?> activations, Function<Collection<Number>,Number> function) {
+        this.shape = shape;
+        this.activations = new FlatNumArray(shape, activations);
+        this.computeFunction = function;
+
+        weighted = checkIfWeighted();
+    }
+    */
 
     /**
      * Returns whether the stencil pattern weights its neighbours as part of its computation
@@ -54,7 +54,7 @@ public class Stencil {
         return weighted;
     }
 
-    public int[] getShape() {
+    public Integer[] getShape() {
         return shape;
     }
 
