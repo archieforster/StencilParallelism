@@ -9,6 +9,10 @@ import java.util.function.Function;
 
 public class Stencil {
     private double ITERATE_THRESHOLD = 0.5;
+    private enum COMP_MODE {
+        SELECT,
+        ITERATE
+    }
 
     private final Integer[] shape;
     private final FlatNumArray activations;
@@ -17,6 +21,7 @@ public class Stencil {
     private boolean weighted;
     private Number oob_default;
     private COMP_MODE comp_mode;
+    private Integer[][] neighbour_vectors;
 
     public Stencil(Integer[] shape, Number[] activations, Function<Collection<Number>,Number> function) {
         this.shape = shape;
@@ -76,7 +81,7 @@ public class Stencil {
             if (shape.length == 3) {values = get_nbrs_iterate_3d(p,input_space);}
         }
         if (comp_mode == COMP_MODE.SELECT){
-
+            if (shape.length == 1) {}
         }
         return computeFunction.apply(values);
     }
@@ -89,7 +94,14 @@ public class Stencil {
     private void base_init(){
         weighted = checkIfWeighted();
         oob_default = 0;
+        setCompMode();
+    }
 
+    /**
+     * Determines and sets COMP_MODE of stencil application, either to ITERATE
+     * through stencil pattern or SELECT neighbours using vectors
+     */
+    private void setCompMode(){
         // Calculate proportion of stencil that has activation
         int positive_activations = 0;
         for (Number a : activations){
@@ -102,13 +114,51 @@ public class Stencil {
         }
         else{
             comp_mode = COMP_MODE.SELECT;
+            setNeighbourVectors(positive_activations);
         }
-
     }
 
-    private enum COMP_MODE {
-        SELECT,
-        ITERATE
+    /**
+     * Stores all vectors to neighbours
+     * @param numOfNeighbours number of neighbours to find/store
+     */
+    private void setNeighbourVectors(int numOfNeighbours){
+        neighbour_vectors = new Integer[numOfNeighbours][];
+        int n_index = 0;
+        if (shape.length == 1){
+            Integer[] a_index;
+            for (int i = -shape[0]; i <= shape[0]; i++){
+                a_index = new Integer[] {i};
+                if (activations.get(a_index).doubleValue() != 0f){
+                    neighbour_vectors[n_index++] = a_index;
+                }
+            }
+        }
+        if (shape.length == 2){
+            Integer[] a_index;
+            for (int i = -shape[0]; i <= shape[0]; i++){
+                for (int j = -shape[1]; j <= shape[1]; j++){
+                    a_index = new Integer[] {i};
+                    if (activations.get(a_index).doubleValue() != 0f){
+                        neighbour_vectors[n_index++] = a_index;
+                    }
+                }
+            }
+        }
+        if (shape.length == 3){
+            Integer[] a_index;
+            for (int i = -shape[0]; i <= shape[0]; i++){
+                for (int j = -shape[1]; j <= shape[1]; j++){
+                    for (int k = -shape[2]; k <= shape[2]; k++){
+                        a_index = new Integer[] {i};
+                        if (activations.get(a_index).doubleValue() != 0f){
+                            neighbour_vectors[n_index++] = a_index;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     /**
@@ -123,7 +173,7 @@ public class Stencil {
         if (isWeighted()){
             Integer[] si;
             for (int i = -shape[0]; i <= shape[0]; i++){
-                si = new Integer[] {i};
+                si = new Integer[] {i + shape[0]};
                 np = new Integer[] {p[0] + i};
                 try{
                     values.add(activations.get(si).doubleValue() *  input_space.get(np).doubleValue());
@@ -157,7 +207,7 @@ public class Stencil {
             Integer[] si;
             for (int i = -shape[0]; i <= shape[0]; i++){
                 for (int j = -shape[1]; j <= shape[1]; j++){
-                    si = new Integer[] {i, j};
+                    si = new Integer[] {i + shape[0], j + shape[1]};
                     np = new Integer[] {p[0] + i, p[1] + j};
                     try{
                         values.add(activations.get(si).doubleValue() * input_space.get(np).doubleValue());
@@ -195,7 +245,7 @@ public class Stencil {
             for (int i = -shape[0]; i <= shape[0]; i++){
                 for (int j = -shape[1]; j <= shape[1]; j++){
                     for (int k = -shape[2]; k <= shape[2]; k++){
-                        si = new Integer[] {i, j, k};
+                        si = new Integer[] {i + shape[0], j + shape[1], k + shape[2]};
                         np = new Integer[] {p[0] + i, p[1] + j, p[2] + k};
                         try{
                             values.add(activations.get(si).doubleValue() * input_space.get(np).doubleValue());
@@ -217,6 +267,20 @@ public class Stencil {
                         }
                     }
                 }
+            }
+        }
+        return values;
+    }
+
+    private List<Number> get_nbrs_select_1d(Integer[] p, FlatNumArray input_space){
+        List<Number> values = new ArrayList<>();
+        if (isWeighted()){
+            Integer[] si;
+            Integer[] np;
+            for (Integer[] v : neighbour_vectors){
+                si = new Integer[] {v[0] + shape[0]};
+                np = new Integer[] {p[0] + v[0]};
+                values.add(activations.get(v).doubleValue() * input_space.get(np).doubleValue());
             }
         }
         return values;
