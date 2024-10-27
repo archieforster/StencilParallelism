@@ -173,6 +173,10 @@ public class FlatNumArray implements Iterable<Number> {
         return shape;
     }
 
+    public int length() {
+        return arrayLength;
+    }
+
     @Override
     public Iterator<Number> iterator() {
         return new Iterator<Number>() {

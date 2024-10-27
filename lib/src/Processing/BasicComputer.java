@@ -1,6 +1,8 @@
 package Processing;
 
 import java.lang.Thread;
+import java.util.Arrays;
+
 import Patterns.Stencil;
 
 public class BasicComputer {
@@ -25,8 +27,15 @@ public class BasicComputer {
         Thread.Builder builder = Thread.ofVirtual().name("stencil_vthread");
     }
 
-    private void execute_over_space(Integer[] start_point, Integer[] subspace_shape){
+    private void execute_over_space(Integer[] sp, Integer[] subspace_shape){
+        Integer[] dp = new Integer[subspace_shape.length];
+        for (int i = 0; i < subspace_shape.length; i++){
+            dp[i] = 0;
+        }
 
+        while (!Arrays.equals(dp, subspace_shape)){
+
+        }
     }
 
 }
