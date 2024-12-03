@@ -169,6 +169,36 @@ public class FlatNumArray implements Iterable<Number> {
         return array[flatIndex];
     }
 
+    /**
+     * Sets the value of the element at the given index
+     * @param index N-dimensional index as ArrayList
+     * @param value New value of element
+     */
+    public void set(Integer[] index, Number value){
+        // Checks for valid index throwing Runtime Exceptions
+        if (index.length != shape.length){
+            throw new IndexShapeException(
+                    String.format("Shape of index %s does not match data with shape %s.",
+                            Arrays.toString(index), Arrays.toString(shape)));
+        }
+        for (int dimIndex = 0; dimIndex < shape.length; dimIndex++){
+            if ( index[dimIndex] < 0 || index[dimIndex] >= shape[dimIndex]){
+                throw new IndexOutOfBoundsException(
+                        String.format("Index %s is out of bounds for data with shape %s.",
+                                Arrays.toString(index), Arrays.toString(shape)));
+            }
+        }
+
+        int flatIndex = 0;
+        // Use dimension chunk size to quickly find flat index
+        // E.g. for shape(3,2,2), index (2,1,1) is at 2*4 + 1*2 + 1*1, where 4,2,1 are chunk sizes
+        for (int dimIndex = 0; dimIndex < shape.length; dimIndex++) {
+            flatIndex += d_chunk_size[dimIndex] * index[dimIndex];
+        }
+
+        array[flatIndex] = value;
+    }
+
     public Integer[] getShape() {
         return shape;
     }
