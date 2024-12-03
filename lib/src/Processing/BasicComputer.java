@@ -9,9 +9,10 @@ public class BasicComputer {
     private FlatNumArray input_space;
     private FlatNumArray output_space;
     private Stencil stencil;
+    private int n_vthreads;
 
     public void BasicComputer(int n_vthreads){
-
+        this.n_vthreads = n_vthreads;
     }
 
     public void setInputSpace(FlatNumArray input_space){
