@@ -39,12 +39,12 @@ public class SpaceChunker {
         // Do regular chunks
         Integer[] chunk_space = chunk_size;
         for (int i = 0; i < dim_divisor - 1; i++){
-            res_chunks[i] = new Chunk(sp, chunk_space);
-            sp[0] += chunk_space[0] + 1;
+            res_chunks[i] = new Chunk(sp.clone(), chunk_space.clone());
+            sp[0] += chunk_space[0];
         }
         // Do final chunk to encapsulate rest of space
         chunk_space = new Integer[]{chunk_size[0] + (input_shape[0] % dim_divisor)};
-        res_chunks[chunk_n - 1] = new Chunk(sp, chunk_space);
+        res_chunks[chunk_n - 1] = new Chunk(sp.clone(), chunk_space.clone());
 
         return res_chunks;
     }
@@ -56,8 +56,8 @@ public class SpaceChunker {
     private Chunk[] reg_chunk_2d(Integer[] input_shape){
         int chunk_n = (int) Math.pow(dim_divisor, 2);
         Integer[] chunk_size = new Integer[] {
-                Math.floorDiv(input_shape[0], chunk_n),
-                Math.floorDiv(input_shape[1], chunk_n)
+                Math.floorDiv(input_shape[0], dim_divisor),
+                Math.floorDiv(input_shape[1], dim_divisor)
         };
         Chunk[] res_chunks = new Chunk[chunk_n];
 
@@ -72,28 +72,28 @@ public class SpaceChunker {
             chunk_space = chunk_size;
             for (int y = 0; y < dim_divisor - 1; y++){
                 // Do regular chunks
-                res_chunks[chunk_count++] = new Chunk(sp, chunk_space);
-                sp[1] += chunk_space[1] + 1;
+                res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+                sp[1] += chunk_space[1];
             }
             // Do final irregular y-dim chunk
             chunk_space = new Integer[]{chunk_size[0], chunk_size[1] + (input_shape[1] % dim_divisor)};
-            res_chunks[chunk_count++] = new Chunk(sp, chunk_space);
-            sp[0] += chunk_space[0] + 1;
+            res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+            sp[0] += chunk_space[0];
         }
         // Do final loop of irregular x-dim chunk
         chunk_space = new Integer[]{chunk_size[0] + (input_shape[0] % dim_divisor), chunk_size[1]};
         sp[1] = 0;
         for (int y = 0; y < dim_divisor - 1; y++){
             // Do regular chunks;
-            res_chunks[chunk_count++] = new Chunk(sp, chunk_space);
-            sp[1] += chunk_space[1] + 1;
+            res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+            sp[1] += chunk_space[1];
         }
         // Do final irregular x-dim and y-dim chunk
         chunk_space = new Integer[]{
                 chunk_size[0] + (input_shape[0] % dim_divisor),
                 chunk_size[1] + (input_shape[1] % dim_divisor)
         };
-        res_chunks[chunk_count] = new Chunk(sp, chunk_space);
+        res_chunks[chunk_count] = new Chunk(sp.clone(), chunk_space.clone());
 
         return res_chunks;
     }
@@ -105,9 +105,9 @@ public class SpaceChunker {
     Chunk[] reg_chunk_3d(Integer[] input_shape){
         int chunk_n = (int) Math.pow(dim_divisor, 3);
         Integer[] chunk_size = new Integer[] {
-                Math.floorDiv(input_shape[0], chunk_n),
-                Math.floorDiv(input_shape[1], chunk_n),
-                Math.floorDiv(input_shape[2], chunk_n)
+                Math.floorDiv(input_shape[0], dim_divisor),
+                Math.floorDiv(input_shape[1], dim_divisor),
+                Math.floorDiv(input_shape[2], dim_divisor)
         };
         Chunk[] res_chunks = new Chunk[chunk_n];
 
@@ -129,9 +129,9 @@ public class SpaceChunker {
                 chunk_space[1] = chunk.getChunkShape()[0];
                 chunk_space[2] = chunk.getChunkShape()[1];
 
-                res_chunks[chunk_count++] = new Chunk(sp, chunk_space);
+                res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
             }
-            sp[0] += chunk_space[0] + 1;
+            sp[0] += chunk_space[0];
         }
         // Irregular chunks in x direction
         chunk_space = new Integer[]{
@@ -145,24 +145,10 @@ public class SpaceChunker {
             chunk_space[1] = chunk.getChunkShape()[0];
             chunk_space[2] = chunk.getChunkShape()[1];
 
-            res_chunks[chunk_count++] = new Chunk(sp, chunk_space);
+            res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
         }
 
         return res_chunks;
-    }
-
-    /**
-     * Vector sum - adds together vector entries (must have same lengths)
-     * @param v1
-     * @param v2
-     * @return Integer[] v1 + v2
-     */
-    private Integer[] v_sum(Integer[] v1, Integer[] v2){
-        Integer[] res = new Integer[v1.length];
-        for (int i = 0; i < v1.length; i++){
-            res[i] = v1[i] + v2[i];
-        }
-        return res;
     }
 
 }

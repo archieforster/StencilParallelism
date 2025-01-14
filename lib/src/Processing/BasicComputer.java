@@ -2,6 +2,9 @@ package Processing;
 
 import java.lang.Thread;
 import java.util.Arrays;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import Patterns.Stencil;
 
@@ -9,10 +12,13 @@ public class BasicComputer {
     private FlatNumArray input_space;
     private FlatNumArray output_space;
     private Stencil stencil;
-    private int n_vthreads;
+    private Thread[] vthreads;
+    private int dim_divisor;
+    private int vthreads_complete;
+    private Lock lock = new ReentrantLock();
 
-    public void BasicComputer(int n_vthreads){
-        this.n_vthreads = n_vthreads;
+    public void BasicComputer(){
+        dim_divisor = 1; // default divisor, no chunking
     }
 
     public void setInputSpace(FlatNumArray input_space){
@@ -24,14 +30,38 @@ public class BasicComputer {
         this.stencil = stencil;
     }
 
+    public void setDimDivisor(int dim_divisor){
+        this.dim_divisor = dim_divisor;
+    }
+
     public void execute(){
-        Thread.Builder builder = Thread.ofVirtual().name("stencil_vthread");
+        ThreadFactory vthreadFactory = Thread.ofVirtual().name("stencil_vthread").factory();
+        SpaceChunker chunker = new SpaceChunker(input_space.getShape(),dim_divisor);
+        Chunk[] chunks = chunker.getRegularChunks();
+
+        // Create VThread for each chunk
+        for (int i = 0; i < chunks.length; i++) {
+            Chunk chunk = chunks[i];
+            Runnable task = () -> {
+                execute_over_space(chunk.getStartPoint(),chunk.getChunkShape());
+                lock.lock();
+                vthreads_complete++;
+                lock.unlock();
+            };
+            vthreads[i] = vthreadFactory.newThread(task);
+        }
+
+        // Start each thread
+        for (Thread thread : vthreads) {
+            thread.start();
+        }
+        // Wait until all threads are complete
+        while (vthreads_complete < vthreads.length) {}
     }
 
     /**
      * Applies stencil to all points in a specified subspace from a given point.
-     * This application is inclusive of the subspace endpoint.
-     * Applies to points sp + [0,...,0], sp + [0,...,1], ..., sp + subspace_shape
+     * Applies to points sp + [0,...,0], sp + [0,...,1], ..., sp + [subspace_shape - (1)]
      * @param sp Starting point as Integer[]
      * @param subspace_shape Shape of subspace as Integer[]
      */
@@ -51,7 +81,7 @@ public class BasicComputer {
 
         // Iterate over space
         int point_counter = 0;
-        while (!Arrays.equals(dp, subspace_shape)){
+        while (!checkZeroArray(dp) || point_counter == 0){
             // Calculates vector to next point
             for (int i = 0; i < dimN; i++){
                 dp[i] = Math.floorDiv(point_counter,products[i]) % subspace_shape[i];
@@ -65,6 +95,19 @@ public class BasicComputer {
             // Iterate to next point
             point_counter++;
         }
+    }
+
+    /**
+     * Checks if numerical array is entirely zeros
+     * @param arr
+     * @return Boolean whether all elements are 0
+     */
+    private boolean checkZeroArray(Number[] arr){
+        int n_zeros = 0;
+        for (int i = 0; i < arr.length; i++){
+            if (arr[i].intValue() == 0){ n_zeros++; }
+        }
+        return n_zeros == arr.length;
     }
 
 }
