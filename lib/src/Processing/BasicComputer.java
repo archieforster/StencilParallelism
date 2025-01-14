@@ -17,7 +17,10 @@ public class BasicComputer {
     private int vthreads_complete;
     private Lock lock = new ReentrantLock();
 
-    public void BasicComputer(){
+    public BasicComputer(FlatNumArray input_space, Stencil stencil) {
+        this.input_space = input_space;
+        output_space = new FlatNumArray(input_space.getShape());
+        this.stencil = stencil;
         dim_divisor = 1; // default divisor, no chunking
     }
 
@@ -40,6 +43,7 @@ public class BasicComputer {
         Chunk[] chunks = chunker.getRegularChunks();
 
         // Create VThread for each chunk
+        vthreads = new Thread[chunks.length];
         for (int i = 0; i < chunks.length; i++) {
             Chunk chunk = chunks[i];
             Runnable task = () -> {
@@ -57,6 +61,10 @@ public class BasicComputer {
         }
         // Wait until all threads are complete
         while (vthreads_complete < vthreads.length) {}
+    }
+
+    public FlatNumArray getOutput() {
+        return output_space;
     }
 
     /**
@@ -81,7 +89,7 @@ public class BasicComputer {
 
         // Iterate over space
         int point_counter = 0;
-        while (!checkZeroArray(dp) || point_counter == 0){
+        while (!checkZeroArray(dp) || point_counter == 0 || point_counter == 1){
             // Calculates vector to next point
             for (int i = 0; i < dimN; i++){
                 dp[i] = Math.floorDiv(point_counter,products[i]) % subspace_shape[i];
@@ -91,7 +99,8 @@ public class BasicComputer {
                 p[i] = sp[i] + dp[i];
             }
             // Apply stencil and store result
-            output_space.set(p,stencil.apply(p,input_space));
+            Number app = stencil.apply(p,input_space);
+            output_space.set(p,app);
             // Iterate to next point
             point_counter++;
         }
@@ -103,6 +112,8 @@ public class BasicComputer {
      * @return Boolean whether all elements are 0
      */
     private boolean checkZeroArray(Number[] arr){
+        // Return false if uninitialised
+        if (arr[0] == null) return false;
         int n_zeros = 0;
         for (int i = 0; i < arr.length; i++){
             if (arr[i].intValue() == 0){ n_zeros++; }

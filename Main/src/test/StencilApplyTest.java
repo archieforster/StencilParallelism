@@ -119,7 +119,7 @@ public class StencilApplyTest {
                         {1,2,1},
                         {0,1,0}
                 },
-                x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
+                x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue()/6)
         );
         stencil.setCompMode(Stencil.COMP_MODE.SELECT);
         Number out = stencil.apply(new Integer[] {1,1}, inputSpace).doubleValue();
