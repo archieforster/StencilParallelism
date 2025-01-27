@@ -29,7 +29,7 @@ public class BasicComputeTest {
         stencil.setOOBDefault(0);
 
         BasicComputer computer = new BasicComputer(inputSpace, stencil);
-        computer.setDimDivisor(1);
+        computer.setDimDivisor(3);
         computer.execute();
         for (Number n : computer.getOutput()) {
             System.out.println(n);

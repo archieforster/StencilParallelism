@@ -1,28 +1,63 @@
 package Processing;
 
-public class SpaceChunker {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+public class Chunker {
     Integer[] input_shape;
     int dim_divisor;
+    // Use Start Point of chunk as key
+    HashMap<String,Chunk> computed_chunks;
 
-    public SpaceChunker(Integer[] input_shape, int dim_divisor) {
+    public Chunker(Integer[] input_shape, int dim_divisor) {
         this.input_shape = input_shape;
         this.dim_divisor = dim_divisor;
     }
 
     public Chunk[] getRegularChunks(){
         int dimN = input_shape.length;
+        computed_chunks = new HashMap<>();{};
 
         if (dimN == 1){
-            return reg_chunk_1d(input_shape);
+            reg_chunk_1d(input_shape);
         }
         else if (dimN == 2){
-            return reg_chunk_2d(input_shape);
+            reg_chunk_2d(input_shape);
         }
         else if (dimN == 3){
-            return reg_chunk_3d(input_shape);
+            reg_chunk_3d(input_shape);
         }
 
-        return new Chunk[]{};
+        // Compute & Set Chunk Neighbours
+        setChunkNeighbours();
+
+        return computed_chunks.values().toArray(new Chunk[0]);
+    }
+
+    private void setChunkNeighbours(){
+        for (Chunk chunk : computed_chunks.values()){
+            ArrayList<Chunk> nbrs = chunk.getNeighbours();
+            Integer[] sp = chunk.getStartPoint();
+            Integer[] chunk_shape = chunk.getChunkShape();
+            Integer[] reg_chunk_shape = new Integer[chunk_shape.length];
+            for (int i = 0; i < reg_chunk_shape.length; i++){
+                reg_chunk_shape[i] = Math.floorDiv(input_shape[i], dim_divisor);
+            }
+
+            for (int i = 0; i < chunk_shape.length; i++){
+                // Chunk behind in dimension
+                Integer[] nbr = sp.clone();
+                nbr[i] -= reg_chunk_shape[i];
+                String nbr_string = Arrays.toString(nbr);
+                if (computed_chunks.containsKey(nbr_string)){ nbrs.add(computed_chunks.get(nbr_string)); }
+                // Chunk ahead in dimension
+                nbr = sp.clone();
+                nbr[i] += reg_chunk_shape[i];
+                nbr_string = Arrays.toString(nbr);
+                if (computed_chunks.containsKey(nbr_string)){ nbrs.add(computed_chunks.get(nbr_string)); }
+            }
+        }
     }
 
     /**
@@ -39,12 +74,14 @@ public class SpaceChunker {
         // Do regular chunks
         Integer[] chunk_space = chunk_size;
         for (int i = 0; i < dim_divisor - 1; i++){
-            res_chunks[i] = new Chunk(sp.clone(), chunk_space.clone());
+            computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+            //res_chunks[i] = new Chunk(sp.clone(), chunk_space.clone());
             sp[0] += chunk_space[0];
         }
         // Do final chunk to encapsulate rest of space
         chunk_space = new Integer[]{chunk_size[0] + (input_shape[0] % dim_divisor)};
-        res_chunks[chunk_n - 1] = new Chunk(sp.clone(), chunk_space.clone());
+        computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+        //res_chunks[chunk_n - 1] = new Chunk(sp.clone(), chunk_space.clone());
 
         return res_chunks;
     }
@@ -72,12 +109,14 @@ public class SpaceChunker {
             chunk_space = chunk_size;
             for (int y = 0; y < dim_divisor - 1; y++){
                 // Do regular chunks
-                res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+                computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+                //res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
                 sp[1] += chunk_space[1];
             }
             // Do final irregular y-dim chunk
             chunk_space = new Integer[]{chunk_size[0], chunk_size[1] + (input_shape[1] % dim_divisor)};
-            res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+            computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+            //res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
             sp[0] += chunk_space[0];
         }
         // Do final loop of irregular x-dim chunk
@@ -85,7 +124,8 @@ public class SpaceChunker {
         sp[1] = 0;
         for (int y = 0; y < dim_divisor - 1; y++){
             // Do regular chunks;
-            res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+            computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+            //res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
             sp[1] += chunk_space[1];
         }
         // Do final irregular x-dim and y-dim chunk
@@ -93,7 +133,8 @@ public class SpaceChunker {
                 chunk_size[0] + (input_shape[0] % dim_divisor),
                 chunk_size[1] + (input_shape[1] % dim_divisor)
         };
-        res_chunks[chunk_count] = new Chunk(sp.clone(), chunk_space.clone());
+        computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+        //res_chunks[chunk_count] = new Chunk(sp.clone(), chunk_space.clone());
 
         return res_chunks;
     }
@@ -129,7 +170,8 @@ public class SpaceChunker {
                 chunk_space[1] = chunk.getChunkShape()[0];
                 chunk_space[2] = chunk.getChunkShape()[1];
 
-                res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+                computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+                //res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
             }
             sp[0] += chunk_space[0];
         }
@@ -145,7 +187,8 @@ public class SpaceChunker {
             chunk_space[1] = chunk.getChunkShape()[0];
             chunk_space[2] = chunk.getChunkShape()[1];
 
-            res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
+            computed_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
+            //res_chunks[chunk_count++] = new Chunk(sp.clone(), chunk_space.clone());
         }
 
         return res_chunks;

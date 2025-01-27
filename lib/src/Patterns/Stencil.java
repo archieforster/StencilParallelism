@@ -10,10 +10,7 @@ import java.util.function.Function;
 
 public class Stencil {
     private double ITERATE_THRESHOLD = 0.5;
-    public enum COMP_MODE {
-        SELECT,
-        ITERATE
-    }
+
 
     private final Integer[] stencil_shape;
     private final Integer[] array_shape;
@@ -22,7 +19,7 @@ public class Stencil {
 
     private boolean weighted;
     private Number oob_default;
-    private COMP_MODE comp_mode;
+    private ComputeMode comp_mode;
     private Integer[][] neighbour_vectors;
 
     public Stencil(Integer[] shape, Number[] activations, Function<Collection<Number>,Number> function) {
@@ -80,12 +77,12 @@ public class Stencil {
 
     public Number apply(Integer[] p, FlatNumArray input_space){
         List values = new ArrayList();
-        if (comp_mode == COMP_MODE.ITERATE){
+        if (comp_mode == ComputeMode.ITERATE){
             if (array_shape.length == 1) {values = get_nbrs_iterate_1d(p,input_space);}
             if (array_shape.length == 2) {values = get_nbrs_iterate_2d(p,input_space);}
             if (array_shape.length == 3) {values = get_nbrs_iterate_3d(p,input_space);}
         }
-        if (comp_mode == COMP_MODE.SELECT){
+        if (comp_mode == ComputeMode.SELECT){
             if (array_shape.length == 1) {values = get_nbrs_select_1d(p,input_space);}
             if (array_shape.length == 2) {values = get_nbrs_select_2d(p,input_space);}
             if (array_shape.length == 3) {values = get_nbrs_select_3d(p,input_space);}
@@ -97,9 +94,9 @@ public class Stencil {
      * Used to manually change between ITERATE and SELECT comp modes
      * @param mode
      */
-    public void setCompMode(COMP_MODE mode) {
+    public void setCompMode(ComputeMode mode) {
         comp_mode = mode;
-        if (comp_mode == COMP_MODE.SELECT){
+        if (comp_mode == ComputeMode.SELECT){
             int positive_activations = 0;
             for (Number a : activations){
                 if (a.doubleValue() != 0f){
@@ -146,10 +143,10 @@ public class Stencil {
             }
         }
         if (positive_activations/activations.length() > ITERATE_THRESHOLD){
-            comp_mode = COMP_MODE.ITERATE;
+            comp_mode = ComputeMode.ITERATE;
         }
         else{
-            comp_mode = COMP_MODE.SELECT;
+            comp_mode = ComputeMode.SELECT;
             setNeighbourVectors(positive_activations);
         }
     }

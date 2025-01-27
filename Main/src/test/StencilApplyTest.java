@@ -1,3 +1,4 @@
+import Patterns.ComputeMode;
 import Patterns.Stencil;
 import Processing.FlatNumArray;
 import org.junit.Test;
@@ -13,7 +14,7 @@ public class StencilApplyTest {
                 new Integer[] {1,2,1},
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
         );
-        stencil.setCompMode(Stencil.COMP_MODE.ITERATE);
+        stencil.setCompMode(ComputeMode.ITERATE);
         Number out = stencil.apply(new Integer[] {2}, inputSpace).doubleValue();
         assert out.doubleValue() == 10d;
         out = stencil.apply(new Integer[] {1}, inputSpace).doubleValue();
@@ -31,7 +32,7 @@ public class StencilApplyTest {
                 new Integer[] {1,2,1},
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
         );
-        stencil.setCompMode(Stencil.COMP_MODE.ITERATE);
+        stencil.setCompMode(ComputeMode.ITERATE);
         Number out = stencil.apply(new Integer[] {0}, inputSpace).doubleValue();
         assert out.doubleValue() == 4d; // Default OOB = 0
         stencil.setOOBDefault(20); // Set to 20
@@ -48,7 +49,7 @@ public class StencilApplyTest {
                 new Integer[] {1,2,1},
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
         );
-        stencil.setCompMode(Stencil.COMP_MODE.SELECT);
+        stencil.setCompMode(ComputeMode.SELECT);
         Number out = stencil.apply(new Integer[] {2}, inputSpace).doubleValue();
         assert out.doubleValue() == 10d;
         out = stencil.apply(new Integer[] {1}, inputSpace).doubleValue();
@@ -66,7 +67,7 @@ public class StencilApplyTest {
                 new Integer[] {1,2,1},
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
         );
-        stencil.setCompMode(Stencil.COMP_MODE.SELECT);
+        stencil.setCompMode(ComputeMode.SELECT);
         Number out = stencil.apply(new Integer[] {0}, inputSpace).doubleValue();
         assert out.doubleValue() == 4d; // Default OOB = 0
         stencil.setOOBDefault(20); // Set to 20
@@ -93,7 +94,7 @@ public class StencilApplyTest {
                 },
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
         );
-        stencil.setCompMode(Stencil.COMP_MODE.ITERATE);
+        stencil.setCompMode(ComputeMode.ITERATE);
         Number out = stencil.apply(new Integer[] {1,1}, inputSpace).doubleValue();
         assert out.doubleValue() == 6d;
         out = stencil.apply(new Integer[] {1,0}, inputSpace).doubleValue();
@@ -121,7 +122,7 @@ public class StencilApplyTest {
                 },
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue()/6)
         );
-        stencil.setCompMode(Stencil.COMP_MODE.SELECT);
+        stencil.setCompMode(ComputeMode.SELECT);
         Number out = stencil.apply(new Integer[] {1,1}, inputSpace).doubleValue();
         assert out.doubleValue() == 6d;
         out = stencil.apply(new Integer[] {1,0}, inputSpace).doubleValue();
@@ -173,7 +174,7 @@ public class StencilApplyTest {
                 },
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
         );
-        stencil.setCompMode(Stencil.COMP_MODE.ITERATE);
+        stencil.setCompMode(ComputeMode.ITERATE);
         Number out = stencil.apply(new Integer[] {1,1,1}, inputSpace).doubleValue();
         assert out.doubleValue() == 8d;
         out = stencil.apply(new Integer[] {0,0,0}, inputSpace).doubleValue();
@@ -223,7 +224,7 @@ public class StencilApplyTest {
                 },
                 x->x.stream().reduce(0, (a,b)-> a.doubleValue() + b.doubleValue())
         );
-        stencil.setCompMode(Stencil.COMP_MODE.SELECT);
+        stencil.setCompMode(ComputeMode.SELECT);
         Number out = stencil.apply(new Integer[] {1,1,1}, inputSpace).doubleValue();
         assert out.doubleValue() == 8d;
         out = stencil.apply(new Integer[] {0,0,0}, inputSpace).doubleValue();

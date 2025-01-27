@@ -1,4 +1,4 @@
-import Processing.SpaceChunker;
+import Processing.Chunker;
 import Processing.Chunk;
 import org.junit.Test;
 
@@ -13,7 +13,7 @@ public class ChunkingTest {
         Integer[] space = new Integer[]{10};
 
         // Case 1: divisor = 2
-        SpaceChunker chunker = new SpaceChunker(space,2);
+        Chunker chunker = new Chunker(space,2);
         Chunk[] chunks = chunker.getRegularChunks();
 
         // Check number of chunks is correct
@@ -31,7 +31,7 @@ public class ChunkingTest {
     public void Test1DPerfectChunkingC2(){
         Integer[] space = new Integer[]{10};
         // Case 2: divisor = 5
-        SpaceChunker chunker = new SpaceChunker(space,5);
+        Chunker chunker = new Chunker(space,5);
         Chunk[] chunks = chunker.getRegularChunks();
         // Check number of chunks
         assert chunks.length == 5;
@@ -49,7 +49,7 @@ public class ChunkingTest {
         Integer[] space = new Integer[]{10};
 
         // Case 1: divisor = 3
-        SpaceChunker chunker = new SpaceChunker(space,3);
+        Chunker chunker = new Chunker(space,3);
         Chunk[] chunks = chunker.getRegularChunks();
 
         // Check number of chunks is correct
@@ -68,7 +68,7 @@ public class ChunkingTest {
     public void Test1DImperfectChunkingC2(){
         Integer[] space = new Integer[]{10};
         // Case 2: divisor = 7
-        SpaceChunker chunker = new SpaceChunker(space,7);
+        Chunker chunker = new Chunker(space,7);
         Chunk[] chunks = chunker.getRegularChunks();
         assert chunks.length == 7;
         // Check first 6 chunks
@@ -86,7 +86,7 @@ public class ChunkingTest {
         Integer[] space = new Integer[]{10,10};
 
         // Case 1: divisor = 2 -> Chunk shape {5,5}
-        SpaceChunker chunker = new SpaceChunker(space,2);
+        Chunker chunker = new Chunker(space,2);
         Chunk[] chunks = chunker.getRegularChunks();
 
         // Divides each dim into 2 -> 2*2 = 4 chunks
@@ -121,7 +121,7 @@ public class ChunkingTest {
         Integer[] space = new Integer[]{12,9};
 
         // Case 1: divisor = 2 -> Chunk shape {5,5}
-        SpaceChunker chunker = new SpaceChunker(space,3);
+        Chunker chunker = new Chunker(space,3);
         Chunk[] chunks = chunker.getRegularChunks();
 
         // Divides each dim into 3 -> 3*3 = 9 chunks
@@ -160,7 +160,7 @@ public class ChunkingTest {
         Integer[] space = new Integer[]{10,10};
 
         // Case 1: divisor = 3 -> Chunk shapes {3,3}, {3,4}, {4,3}, {4,4}
-        SpaceChunker chunker = new SpaceChunker(space,3);
+        Chunker chunker = new Chunker(space,3);
         Chunk[] chunks = chunker.getRegularChunks();
 
         assert chunks.length == 9;
@@ -210,7 +210,7 @@ public class ChunkingTest {
         Integer[] space = new Integer[]{10,10};
 
         // Case 2: divisor = 4 -> Chunk shapes {2,2}, {2,4}, {4,2}, {4,4}
-        SpaceChunker chunker = new SpaceChunker(space,4);
+        Chunker chunker = new Chunker(space,4);
         Chunk[] chunks = chunker.getRegularChunks();
 
         assert chunks.length == 16;
@@ -266,7 +266,7 @@ public class ChunkingTest {
     public void Test3DPerfectChunking(){
         Integer[] space = new Integer[]{10,10,10};
 
-        SpaceChunker chunker = new SpaceChunker(space,2);
+        Chunker chunker = new Chunker(space,2);
         Chunk[] chunks = chunker.getRegularChunks();
 
         // Check n.o. chunks
@@ -305,7 +305,7 @@ public class ChunkingTest {
     public void Test3DImperfectChunking(){
         Integer[] space = new Integer[]{10,10,10};
 
-        SpaceChunker chunker = new SpaceChunker(space,3);
+        Chunker chunker = new Chunker(space,3);
         Chunk[] chunks = chunker.getRegularChunks();
 
         // Check n.o. chunks

@@ -2,18 +2,23 @@ package Processing;
 
 import java.lang.Thread;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import Patterns.Stencil;
 
+
 public class BasicComputer {
+    private int dim_divisor;
     private FlatNumArray input_space;
     private FlatNumArray output_space;
     private Stencil stencil;
     private Thread[] vthreads;
-    private int dim_divisor;
+    private HashMap<Chunk,ChunkExecutionData> chunk_execution_data;
+    private Chunk[] chunks;
     private int vthreads_complete;
     private Lock lock = new ReentrantLock();
 
@@ -39,20 +44,37 @@ public class BasicComputer {
 
     public void execute(){
         ThreadFactory vthreadFactory = Thread.ofVirtual().name("stencil_vthread").factory();
-        SpaceChunker chunker = new SpaceChunker(input_space.getShape(),dim_divisor);
-        Chunk[] chunks = chunker.getRegularChunks();
+        Chunker chunker = new Chunker(input_space.getShape(),dim_divisor);
+        chunks = chunker.getRegularChunks();
+        chunk_execution_data = new HashMap<>();
+        for (Chunk chunk: chunks) {
+            ChunkExecutionData chunk_data = new ChunkExecutionData();
+            chunk_data.iters_complete = 0;
+            chunk_data.nbrs_complete = 0;
+            chunk_execution_data.put(chunk, chunk_data);
+        }
+
+        // Task per thread
+        Consumer<Integer> task = (chunk_i) -> {
+            Chunk chunk = chunks[chunk_i];
+            execute_over_space(chunk.getStartPoint(),chunk.getChunkShape());
+            lock.lock();
+            vthreads_complete++;
+            ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
+            chunk_data.iters_complete++;
+            for (Chunk nbr: chunk.getNeighbours()){
+                chunk_data.nbrs_complete++;
+            }
+            lock.unlock();
+        };
 
         // Create VThread for each chunk
         vthreads = new Thread[chunks.length];
         for (int i = 0; i < chunks.length; i++) {
-            Chunk chunk = chunks[i];
-            Runnable task = () -> {
-                execute_over_space(chunk.getStartPoint(),chunk.getChunkShape());
-                lock.lock();
-                vthreads_complete++;
-                lock.unlock();
-            };
-            vthreads[i] = vthreadFactory.newThread(task);
+            int chunk_i = i;
+            vthreads[i] = vthreadFactory.newThread((Runnable) () -> {
+                task.accept(chunk_i);
+            });
         }
 
         // Start each thread
@@ -61,6 +83,10 @@ public class BasicComputer {
         }
         // Wait until all threads are complete
         while (vthreads_complete < vthreads.length) {}
+
+        for (Chunk c : chunks){
+            System.out.println(Arrays.toString(c.getNeighbours().toArray()));
+        }
     }
 
     public FlatNumArray getOutput() {
