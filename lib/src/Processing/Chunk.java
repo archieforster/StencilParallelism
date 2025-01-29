@@ -6,6 +6,7 @@ public class Chunk {
     private Integer[] start_point;
     private Integer[] chunk_shape;
     private ArrayList<Chunk> neighbours;
+    private ChunkExecutionData execution_data;
 
     public Chunk(Integer[] sp, Integer[] shape){
         start_point = sp;
@@ -25,4 +26,11 @@ public class Chunk {
         return neighbours;
     }
 
+    public void setExecutionData(ChunkExecutionData execution_data) {
+        this.execution_data = execution_data;
+    }
+
+    public ChunkExecutionData getExecutionData(){
+        return execution_data;
+    }
 }

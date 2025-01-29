@@ -24,7 +24,6 @@ public class FlatNumArray implements Iterable<Number> {
         }
         arrayLength = size;
         array = new Number[arrayLength];
-
     }
     
     

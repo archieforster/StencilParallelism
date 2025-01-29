@@ -1,6 +1,7 @@
 import Patterns.Stencil;
 import Processing.BasicComputer;
 import Processing.FlatNumArray;
+import Processing.ISLType;
 import org.junit.Test;
 
 public class BasicComputeTest {
@@ -30,6 +31,8 @@ public class BasicComputeTest {
 
         BasicComputer computer = new BasicComputer(inputSpace, stencil);
         computer.setDimDivisor(3);
+        computer.setISLType(ISLType.FIXED_LOOP);
+        computer.setMaxLoops(3);
         computer.execute();
         for (Number n : computer.getOutput()) {
             System.out.println(n);
