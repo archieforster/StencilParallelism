@@ -25,7 +25,6 @@ public class BasicComputer {
     private ConcurrentHashMap<Chunk,ChunkExecutionData> chunk_execution_data;
     private Chunk[] chunks;
     private ArrayList<Chunk> chunks_complete;
-    private int vthreads_complete;
     private Lock lock = new ReentrantLock();
 
     public BasicComputer(FlatNumArray input_space, Stencil stencil) {
@@ -106,9 +105,12 @@ public class BasicComputer {
         return true;
     }
 
+    private void execute_with_pool(){
+
+    }
+
     private void execute_fixed_loop(){
         ThreadFactory vthreadFactory = Thread.ofVirtual().name("stencil_vthread").factory();
-        vthreads_complete = 0;
         chunks_complete = new ArrayList<>();
         // Setup chunks & execution data
         setup_chunks();
@@ -134,7 +136,6 @@ public class BasicComputer {
             // Write results to output space
             space_handler.writeToOutput(chunk,chunk_data.iters_complete);
             chunks_complete.add(chunk);
-            vthreads_complete++;
             lock.unlock();
         };
 
