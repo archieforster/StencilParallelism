@@ -1,4 +1,4 @@
-import Processing.FlatNumArray;
+import Utils.FlatNumArray;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

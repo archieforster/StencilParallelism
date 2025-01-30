@@ -1,9 +1,7 @@
 package Processing;
 
 import java.lang.Thread;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
@@ -11,28 +9,36 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import Chunking.Chunk;
+import Chunking.ChunkExecutionData;
+import Chunking.Chunker;
 import Patterns.Stencil;
+import Utils.FlatNumArray;
 
 
-public class BasicComputer {
+public class Computer {
     private ISLType isl_type;
+    private ThreadingMode threadingMode;
     private Function condition_func;
     private int dim_divisor;
     private int max_loops;
     private SpaceHandler space_handler;
     private Stencil stencil;
     private Thread[] vthreads;
-    private ConcurrentHashMap<Chunk,ChunkExecutionData> chunk_execution_data;
+    private ConcurrentHashMap<Chunk, ChunkExecutionData> chunk_execution_data;
     private Chunk[] chunks;
-    private ArrayList<Chunk> chunks_complete;
     private Lock lock = new ReentrantLock();
+    private Runnable[] thread_tasks;
+    private int max_threads;
 
-    public BasicComputer(FlatNumArray input_space, Stencil stencil) {
+    public Computer(FlatNumArray input_space, Stencil stencil) {
         space_handler = new SpaceHandler(input_space);
         this.stencil = stencil;
         dim_divisor = 1; // default divisor, no chunking
         // default to fixed ISL with one iteration
         isl_type = ISLType.FIXED_LOOP;
+        // default to vthread per chunk
+        threadingMode = ThreadingMode.PER_CHUNK;
         max_loops = 1;
     }
 
@@ -56,11 +62,21 @@ public class BasicComputer {
         this.condition_func = condition_func;
     }
 
+    public void setThreadingMode(ThreadingMode threadingMode){
+        this.threadingMode = threadingMode;
+    }
+    public void setThreadingMode(ThreadingMode threadingMode, int max_threads){
+        this.threadingMode = threadingMode;
+        this.max_threads = max_threads;
+    }
+
     public void setMaxLoops(int max_loops){
         this.max_loops = max_loops;
     }
 
     public void execute(){
+        // Setup chunks & execution data
+        setup_chunks();
         if (isl_type == ISLType.FIXED_LOOP){
             execute_fixed_loop();
         }
@@ -105,16 +121,33 @@ public class BasicComputer {
         return true;
     }
 
-    private void execute_with_pool(){
+    private void execute_with_pool(Consumer <Integer> chunk_task){
+
+        // Create VThreads for pool
+    }
+
+    private void execute_with_chunk_threads(Consumer<Integer> chunk_task){
+        ThreadFactory vthreadFactory = Thread.ofVirtual().name("stencil_vthread").factory();
+
+        // Create VThread for each chunk
+        vthreads = new Thread[chunks.length];
+        for (int i = 0; i < chunks.length; i++) {
+            int chunk_i = i;
+            vthreads[i] = vthreadFactory.newThread((Runnable) () -> {
+                chunk_task.accept(chunk_i);
+            });
+        }
+
+        // Start each thread
+        for (Thread thread : vthreads) {
+            thread.start();
+        }
+        // Wait until all threads are complete
+        while (!all_threads_complete()) {}
 
     }
 
     private void execute_fixed_loop(){
-        ThreadFactory vthreadFactory = Thread.ofVirtual().name("stencil_vthread").factory();
-        chunks_complete = new ArrayList<>();
-        // Setup chunks & execution data
-        setup_chunks();
-
         // Task per thread
         Consumer<Integer> task = (chunk_i) -> {
             // Get chunk & data
@@ -135,25 +168,17 @@ public class BasicComputer {
             lock.lock();
             // Write results to output space
             space_handler.writeToOutput(chunk,chunk_data.iters_complete);
-            chunks_complete.add(chunk);
             lock.unlock();
         };
 
-        // Create VThread for each chunk
-        vthreads = new Thread[chunks.length];
-        for (int i = 0; i < chunks.length; i++) {
-            int chunk_i = i;
-            vthreads[i] = vthreadFactory.newThread((Runnable) () -> {
-                task.accept(chunk_i);
-            });
+        switch (threadingMode){
+            case PER_CHUNK:
+                execute_with_chunk_threads(task);
+                break;
+            case POOL:
+                execute_with_pool();
+                break;
         }
-
-        // Start each thread
-        for (Thread thread : vthreads) {
-            thread.start();
-        }
-        // Wait until all threads are complete
-        while (!all_threads_complete()) {}
 
         for (Chunk c : chunks){
             System.out.println(Arrays.toString(c.getNeighbours().toArray()));

@@ -1,9 +1,8 @@
 package Patterns;
 
-import Processing.FlatNumArray;
+import Utils.FlatNumArray;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;

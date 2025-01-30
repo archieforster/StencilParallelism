@@ -1,4 +1,4 @@
-package Processing;
+package Chunking;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +8,7 @@ public class Chunker {
     Integer[] input_shape;
     int dim_divisor;
     // Use Start Point of chunk as key
-    HashMap<String,Chunk> computed_chunks;
+    HashMap<String, Chunk> computed_chunks;
 
     public Chunker(Integer[] input_shape, int dim_divisor) {
         this.input_shape = input_shape;

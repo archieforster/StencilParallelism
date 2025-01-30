@@ -1,12 +1,14 @@
 package Processing;
 
-import java.util.HashMap;
+import Chunking.Chunk;
+import Utils.FlatNumArray;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class SpaceHandler {
-    private ConcurrentHashMap<Integer,FlatNumArray> iterationSpace;
+    private ConcurrentHashMap<Integer, FlatNumArray> iterationSpace;
     private FlatNumArray initial_space;
     private FlatNumArray output_space;
     private int min_iteration;

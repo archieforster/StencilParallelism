@@ -1,6 +1,6 @@
 import Patterns.ComputeMode;
 import Patterns.Stencil;
-import Processing.FlatNumArray;
+import Utils.FlatNumArray;
 import org.junit.Test;
 
 public class StencilApplyTest {

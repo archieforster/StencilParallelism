@@ -1,7 +1,8 @@
 import Patterns.Stencil;
-import Processing.BasicComputer;
-import Processing.FlatNumArray;
+import Processing.Computer;
+import Utils.FlatNumArray;
 import Processing.ISLType;
+import Processing.ThreadingMode;
 import org.junit.Test;
 
 public class BasicComputeTest {
@@ -29,7 +30,8 @@ public class BasicComputeTest {
         // Set default for Out-Of-Bound values as 0
         stencil.setOOBDefault(0);
 
-        BasicComputer computer = new BasicComputer(inputSpace, stencil);
+        Computer computer = new Computer(inputSpace, stencil);
+        computer.setThreadingMode(ThreadingMode.PER_CHUNK);
         computer.setDimDivisor(3);
         computer.setISLType(ISLType.FIXED_LOOP);
         computer.setMaxLoops(3);

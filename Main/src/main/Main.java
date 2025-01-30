@@ -1,5 +1,4 @@
 import Patterns.Stencil;
-import Processing.FlatNumArray;
 
 
 public class Main {

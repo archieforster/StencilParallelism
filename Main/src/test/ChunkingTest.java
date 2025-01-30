@@ -1,5 +1,5 @@
-import Processing.Chunker;
-import Processing.Chunk;
+import Chunking.Chunker;
+import Chunking.Chunk;
 import org.junit.Test;
 
 import java.util.ArrayList;
