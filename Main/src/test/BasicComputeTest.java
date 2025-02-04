@@ -31,7 +31,7 @@ public class BasicComputeTest {
         stencil.setOOBDefault(0);
 
         Computer computer = new Computer(inputSpace, stencil);
-        computer.setThreadingMode(ThreadingMode.PER_CHUNK);
+        computer.setThreadingMode(ThreadingMode.POOL,4);
         computer.setDimDivisor(3);
         computer.setISLType(ISLType.FIXED_LOOP);
         computer.setMaxLoops(3);

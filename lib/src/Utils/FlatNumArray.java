@@ -122,6 +122,10 @@ public class FlatNumArray implements Iterable<Number> {
         }
     }
 
+    public Number[] asArray(){
+        return array;
+    }
+
     /**
      * Initialises dimension chunk size array used to quickly index/lookup
      * elements in the flat array

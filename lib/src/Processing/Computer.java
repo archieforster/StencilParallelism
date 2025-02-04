@@ -2,10 +2,13 @@ package Processing;
 
 import java.lang.Thread;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -14,22 +17,23 @@ import Chunking.ChunkExecutionData;
 import Chunking.Chunker;
 import Patterns.Stencil;
 import Utils.FlatNumArray;
+import Utils.ThreadPool;
 
 
 public class Computer {
     private ISLType isl_type;
     private ThreadingMode threadingMode;
-    private Function condition_func;
+    private Function<Collection,Boolean> condition_func;
+    private ThreadPool threadPool;
+    private int max_threads;
     private int dim_divisor;
-    private int max_loops;
+    private int iteration_count;
     private SpaceHandler space_handler;
     private Stencil stencil;
     private Thread[] vthreads;
     private ConcurrentHashMap<Chunk, ChunkExecutionData> chunk_execution_data;
     private Chunk[] chunks;
     private Lock lock = new ReentrantLock();
-    private Runnable[] thread_tasks;
-    private int max_threads;
 
     public Computer(FlatNumArray input_space, Stencil stencil) {
         space_handler = new SpaceHandler(input_space);
@@ -39,7 +43,7 @@ public class Computer {
         isl_type = ISLType.FIXED_LOOP;
         // default to vthread per chunk
         threadingMode = ThreadingMode.PER_CHUNK;
-        max_loops = 1;
+        iteration_count = 1;
     }
 
     public void setInputSpace(FlatNumArray input_space){
@@ -71,7 +75,7 @@ public class Computer {
     }
 
     public void setMaxLoops(int max_loops){
-        this.max_loops = max_loops;
+        this.iteration_count = max_loops;
     }
 
     public void execute(){
@@ -121,11 +125,25 @@ public class Computer {
         return true;
     }
 
+    /**
+     * Blocking. Creates thread pool and initialises input task per chunk into run queue
+     * @param chunk_task Task taking chunk index as a parameter
+     */
     private void execute_with_pool(Consumer <Integer> chunk_task){
+        // Adds tasks for all chunks
+        for (int i = 0; i < chunks.length; i++) {
+            int chunk_i = i;
+            threadPool.addTask( () -> chunk_task.accept(chunk_i) );
+        }
 
-        // Create VThreads for pool
+        // Starts execution through ThreadPool interface
+        threadPool.executeAll();
     }
 
+    /**
+     * Blocking. Executes task per chunk with a thread assigned per chunk.
+     * @param chunk_task Task assigned to each chunk, task uses chunk index as a parameter
+     */
     private void execute_with_chunk_threads(Consumer<Integer> chunk_task){
         ThreadFactory vthreadFactory = Thread.ofVirtual().name("stencil_vthread").factory();
 
@@ -133,9 +151,7 @@ public class Computer {
         vthreads = new Thread[chunks.length];
         for (int i = 0; i < chunks.length; i++) {
             int chunk_i = i;
-            vthreads[i] = vthreadFactory.newThread((Runnable) () -> {
-                chunk_task.accept(chunk_i);
-            });
+            vthreads[i] = vthreadFactory.newThread( () -> chunk_task.accept(chunk_i) );
         }
 
         // Start each thread
@@ -147,41 +163,78 @@ public class Computer {
 
     }
 
-    private void execute_fixed_loop(){
-        // Task per thread
-        Consumer<Integer> task = (chunk_i) -> {
-            // Get chunk & data
-            Chunk chunk = chunks[chunk_i];
-            ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
+    /**
+     * Executes fixed loop ISL
+     */
+    private void execute_fixed_loop() {
+        // Task per thread, takes chunk index as parameter
+        Consumer<Integer> task;
 
-            // Loop until completed max iterations (non-inclusive as iterations
-            // counted from 0
-            for (int iteration = 0; iteration < max_loops; iteration++){
-                // Spin until all neighbours have completed
-                while (iteration > 0 && !check_nbrs_complete(chunk) ) {}
-
-                // Execute over space
-                execute_over_space(chunk.getStartPoint(),chunk.getChunkShape(), iteration);
-                chunk_data.iters_complete++;
-            }
-
-            lock.lock();
-            // Write results to output space
-            space_handler.writeToOutput(chunk,chunk_data.iters_complete);
-            lock.unlock();
-        };
-
-        switch (threadingMode){
+        switch (threadingMode) {
             case PER_CHUNK:
+                // Task per thread, each assigned a chunk to work on
+                task = (chunk_i) -> {
+                    // Get chunk & data
+                    Chunk chunk = chunks[chunk_i];
+                    ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
+
+                    // Loop until completed max iterations (non-inclusive as iterations
+                    // counted from 0
+                    for (int iteration = 0; iteration < iteration_count; iteration++) {
+                        // Spin until all neighbours have completed
+                        while (iteration > 0 && !check_nbrs_complete(chunk)) {}
+
+                        // Execute over space
+                        execute_over_space(chunk.getStartPoint(), chunk.getChunkShape(), iteration);
+                        chunk_data.iters_complete++;
+                    }
+
+                    lock.lock();
+                    // Write results to output space
+                    space_handler.writeToOutput(chunk, chunk_data.iters_complete);
+                    lock.unlock();
+                };
+
                 execute_with_chunk_threads(task);
                 break;
-            case POOL:
-                execute_with_pool();
-                break;
-        }
 
-        for (Chunk c : chunks){
-            System.out.println(Arrays.toString(c.getNeighbours().toArray()));
+            case POOL:
+                // Creates Thread Pool
+                ThreadFactory vthreadFactory = Thread.ofVirtual().name("stencil_vthread").factory();
+                threadPool = new ThreadPool(vthreadFactory,max_threads);
+
+                // Recursive task to be done by threads, creates & adds tasks to pool queue
+                // Super task per thread, becomes threadPool attribute to enable recursion
+                BiConsumer<Integer, Integer> recursive_task = (chunk_index, iteration) -> {
+                    Chunk chunk = chunks[chunk_index];
+                    ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
+
+                    // Puts task back into queue if neighbours are not complete
+                    if (!check_nbrs_complete(chunk)){
+                        Runnable rec_task = () -> threadPool.getRecursiveTask().accept(chunk_index, iteration);
+                        threadPool.addTask(rec_task);
+                        return;
+                    }
+                    // Run for iteration
+                    execute_over_space(chunk.getStartPoint(), chunk.getChunkShape(), iteration);
+                    chunk_data.iters_complete++;
+                    // Add task for next iteration if needed
+                    if (iteration + 1 < iteration_count) {
+                        Runnable rec_task = () -> threadPool.getRecursiveTask().accept(chunk_index, iteration + 1);
+                        threadPool.addTask(rec_task);
+                    } else {
+                        // Chunk must be complete, write result to output space
+                        lock.lock();
+                        space_handler.writeToOutput(chunk, chunk_data.iters_complete);
+                        lock.unlock();
+                    }
+                };
+                threadPool.setRecursiveTask(recursive_task);
+
+                // Init task per chunk
+                Consumer<Integer> init_task = (chunk_index) -> recursive_task.accept(chunk_index, 0);
+                execute_with_pool(init_task);
+                break;
         }
     }
 

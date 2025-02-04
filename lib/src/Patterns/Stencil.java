@@ -340,6 +340,8 @@ public class Stencil {
             for (Integer[] v : neighbour_vectors){
                 np = new Integer[] {p[0] + v[0], p[1] + v[1]};
                 try{
+                    Number n = input_space.get(np);
+                    double n_val = n.doubleValue();
                     values.add(getActivationFromVector(v).doubleValue() * input_space.get(np).doubleValue());
                 } catch (IndexOutOfBoundsException e){
                     values.add(oob_default);
