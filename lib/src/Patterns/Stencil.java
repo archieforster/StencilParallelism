@@ -215,25 +215,14 @@ public class Stencil {
     private List<Number> get_nbrs_iterate_1d(Integer[] p, FlatNumArray input_space){
         List<Number> values = new ArrayList<>();
         Integer[] np;
-        if (isWeighted()){
-            Integer[] si;
-            for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
-                si = new Integer[] {i};
-                np = new Integer[] {p[0] + i};
-                try{
-                    values.add(getActivationFromVector(si).doubleValue() *  input_space.get(np).doubleValue());
-                } catch (IndexOutOfBoundsException e){
-                    values.add(oob_default);
-                }
-            }
-        } else {
-            for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
-                np = new Integer[] {p[0] + i};
-                try{
-                    values.add(input_space.get(np));
-                } catch (IndexOutOfBoundsException e){
-                    values.add(oob_default);
-                }
+        Integer[] si;
+        for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
+            si = new Integer[] {i};
+            np = new Integer[] {p[0] + i};
+            try{
+                values.add(getActivationFromVector(si).doubleValue() *  input_space.get(np).doubleValue());
+            } catch (IndexOutOfBoundsException e){
+                values.add(oob_default);
             }
         }
         return values;
@@ -248,28 +237,17 @@ public class Stencil {
     private List<Number> get_nbrs_iterate_2d(Integer[] p, FlatNumArray input_space){
         List<Number> values = new ArrayList<>();
         Integer[] np;
-        if (isWeighted()){
-            Integer[] si;
-            for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
-                for (int j = -stencil_shape[1]; j <= stencil_shape[1]; j++){
-                    si = new Integer[] {i, j};
-                    np = new Integer[] {p[0] + i, p[1] + j};
-                    try{
-                        values.add(getActivationFromVector(si).doubleValue() * input_space.get(np).doubleValue());
-                    } catch (IndexOutOfBoundsException e){
-                        values.add(oob_default);
-                    }
-                }
-            }
-        } else {
-            for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
-                for (int j = -stencil_shape[1]; j <= stencil_shape[1]; j++){
-                    np = new Integer[] {p[0] + i, p[1] + j};
-                    try{
-                        values.add(input_space.get(np));
-                    } catch (IndexOutOfBoundsException e){
-                        values.add(oob_default);
-                    }
+        Integer[] si;
+        for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
+            for (int j = -stencil_shape[1]; j <= stencil_shape[1]; j++){
+                si = new Integer[] {i, j};
+                np = new Integer[] {p[0] + i, p[1] + j};
+                try{
+                    Number val = input_space.get(np);
+                    double a = getActivationFromVector(si).doubleValue();
+                    values.add(getActivationFromVector(si).doubleValue() * input_space.get(np).doubleValue());
+                } catch (IndexOutOfBoundsException e){
+                    values.add(oob_default);
                 }
             }
         }
@@ -285,31 +263,16 @@ public class Stencil {
     private List<Number> get_nbrs_iterate_3d(Integer[] p, FlatNumArray input_space){
         List<Number> values = new ArrayList<>();
         Integer[] np;
-        if (isWeighted()){
-            Integer[] si;
-            for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
-                for (int j = -stencil_shape[1]; j <= stencil_shape[1]; j++){
-                    for (int k = -stencil_shape[2]; k <= stencil_shape[2]; k++){
-                        si = new Integer[] {i, j, k};
-                        np = new Integer[] {p[0] + i, p[1] + j, p[2] + k};
-                        try{
-                            values.add(getActivationFromVector(si).doubleValue() * input_space.get(np).doubleValue());
-                        } catch (IndexOutOfBoundsException e){
-                            values.add(oob_default);
-                        }
-                    }
-                }
-            }
-        } else {
-            for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
-                for (int j = -stencil_shape[1]; j <= stencil_shape[1]; j++){
-                    for (int k = -stencil_shape[2]; k <= stencil_shape[2]; k++){
-                        np = new Integer[] {p[0] + i, p[1] + j, p[2] + k};
-                        try{
-                            values.add(input_space.get(np));
-                        } catch (IndexOutOfBoundsException e){
-                            values.add(oob_default);
-                        }
+        Integer[] si;
+        for (int i = -stencil_shape[0]; i <= stencil_shape[0]; i++){
+            for (int j = -stencil_shape[1]; j <= stencil_shape[1]; j++){
+                for (int k = -stencil_shape[2]; k <= stencil_shape[2]; k++){
+                    si = new Integer[] {i, j, k};
+                    np = new Integer[] {p[0] + i, p[1] + j, p[2] + k};
+                    try{
+                        values.add(getActivationFromVector(si).doubleValue() * input_space.get(np).doubleValue());
+                    } catch (IndexOutOfBoundsException e){
+                        values.add(oob_default);
                     }
                 }
             }
@@ -319,15 +282,13 @@ public class Stencil {
 
     private List<Number> get_nbrs_select_1d(Integer[] p, FlatNumArray input_space){
         List<Number> values = new ArrayList<>();
-        if (isWeighted()){
-            Integer[] np;
-            for (Integer[] v : neighbour_vectors){
-                np = new Integer[] {p[0] + v[0]};
-                try{
-                    values.add(getActivationFromVector(v).doubleValue() * input_space.get(np).doubleValue());
-                } catch (IndexOutOfBoundsException e){
-                    values.add(oob_default);
-                }
+        Integer[] np;
+        for (Integer[] v : neighbour_vectors){
+            np = new Integer[] {p[0] + v[0]};
+            try{
+                values.add(getActivationFromVector(v).doubleValue() * input_space.get(np).doubleValue());
+            } catch (IndexOutOfBoundsException e){
+                values.add(oob_default);
             }
         }
         return values;
@@ -335,17 +296,16 @@ public class Stencil {
 
     private List<Number> get_nbrs_select_2d(Integer[] p, FlatNumArray input_space){
         List<Number> values = new ArrayList<>();
-        if (isWeighted()){
-            Integer[] np;
-            for (Integer[] v : neighbour_vectors){
-                np = new Integer[] {p[0] + v[0], p[1] + v[1]};
-                try{
-                    Number n = input_space.get(np);
-                    double n_val = n.doubleValue();
-                    values.add(getActivationFromVector(v).doubleValue() * input_space.get(np).doubleValue());
-                } catch (IndexOutOfBoundsException e){
-                    values.add(oob_default);
-                }
+        Integer[] np;
+        for (Integer[] v : neighbour_vectors){
+            np = new Integer[] {p[0] + v[0], p[1] + v[1]};
+            try{
+                Number n = input_space.get(np);
+                double n_val = n.doubleValue();
+                double a_val = getActivationFromVector(v).doubleValue();
+                values.add(getActivationFromVector(v).doubleValue() * input_space.get(np).doubleValue());
+            } catch (IndexOutOfBoundsException e){
+                values.add(oob_default);
             }
         }
         return values;
@@ -353,15 +313,13 @@ public class Stencil {
 
     private List<Number> get_nbrs_select_3d(Integer[] p, FlatNumArray input_space){
         List<Number> values = new ArrayList<>();
-        if (isWeighted()){
-            Integer[] np;
-            for (Integer[] v : neighbour_vectors){
-                np = new Integer[] {p[0] + v[0], p[1] + v[1], p[2] + v[2]};
-                try{
-                    values.add(getActivationFromVector(v).doubleValue() * input_space.get(np).doubleValue());
-                } catch (IndexOutOfBoundsException e){
-                    values.add(oob_default);
-                }
+        Integer[] np;
+        for (Integer[] v : neighbour_vectors){
+            np = new Integer[] {p[0] + v[0], p[1] + v[1], p[2] + v[2]};
+            try{
+                values.add(getActivationFromVector(v).doubleValue() * input_space.get(np).doubleValue());
+            } catch (IndexOutOfBoundsException e){
+                values.add(oob_default);
             }
         }
         return values;

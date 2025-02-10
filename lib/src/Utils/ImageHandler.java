@@ -5,13 +5,18 @@ import java.io.File;
 import java.io.IOException;
 
 public class ImageHandler {
-    public int[][] loadPng(String filePath) throws IOException {
+    public Integer[][] loadPng(String filePath) {
         // Read file
-        BufferedImage image = ImageIO.read(new File(filePath));
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(new File(filePath));
+        } catch (IOException e) {
+            return null;
+        }
 
         int width = image.getWidth();
         int height = image.getHeight();
-        int[][] result = new int[height][width];
+        Integer[][] result = new Integer[height][width];
 
         // Load pixel data into 2D array
         for (int y = 0; y < height; y++) {
@@ -22,16 +27,16 @@ public class ImageHandler {
         return result;
     }
 
-    public void savePng(int[][] image_data, String filePath) throws IOException {
-        int height = image_data.length;
-        int width = image_data[0].length;
+    public void savePng(FlatNumArray image_data, String filePath) throws IOException {
+        int height = image_data.getShape()[1];
+        int width = image_data.getShape()[0];
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         // Convert array back to image
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                image.setRGB(x, y, image_data[y][x]);
+                image.setRGB(x, y, image_data.get(new Integer[] {x,y}).intValue());
             }
         }
 

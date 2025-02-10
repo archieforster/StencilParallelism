@@ -205,6 +205,7 @@ public class Computer {
 
                 // Recursive task to be done by threads, creates & adds tasks to pool queue
                 // Super task per thread, becomes threadPool attribute to enable recursion
+                // Iteration reflects iteration number, e.g. 1 is task of doing first iteration
                 BiConsumer<Integer, Integer> recursive_task = (chunk_index, iteration) -> {
                     Chunk chunk = chunks[chunk_index];
                     ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
@@ -219,7 +220,7 @@ public class Computer {
                     execute_over_space(chunk.getStartPoint(), chunk.getChunkShape(), iteration);
                     chunk_data.iters_complete++;
                     // Add task for next iteration if needed
-                    if (iteration + 1 < iteration_count) {
+                    if (iteration <= iteration_count) {
                         Runnable rec_task = () -> threadPool.getRecursiveTask().accept(chunk_index, iteration + 1);
                         threadPool.addTask(rec_task);
                     } else {
@@ -232,7 +233,7 @@ public class Computer {
                 threadPool.setRecursiveTask(recursive_task);
 
                 // Init task per chunk
-                Consumer<Integer> init_task = (chunk_index) -> recursive_task.accept(chunk_index, 0);
+                Consumer<Integer> init_task = (chunk_index) -> recursive_task.accept(chunk_index, 1);
                 execute_with_pool(init_task);
                 break;
         }
@@ -283,8 +284,8 @@ public class Computer {
                 p[i] = sp[i] + dp[i];
             }
             // Apply stencil and store result using space_handler
-            FlatNumArray input_space = space_handler.getSpace(iteration);
-            FlatNumArray output_space = space_handler.getSpace(iteration + 1);
+            FlatNumArray input_space = space_handler.getSpace(iteration - 1);
+            FlatNumArray output_space = space_handler.getSpace(iteration);
             Number app = stencil.apply(p,input_space);
             output_space.set(p,app);
             // Iterate to next point

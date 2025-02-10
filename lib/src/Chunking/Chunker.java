@@ -35,6 +35,10 @@ public class Chunker {
         return computed_chunks.values().toArray(new Chunk[0]);
     }
 
+    /**
+     * Finds and sets chunk neighbours. These are all chunks that are adjacent in at least
+     * 1 dimension (8 surrounding chunks in 3x3 grid, does not include chunk itself)
+     */
     private void setChunkNeighbours(){
         for (Chunk chunk : computed_chunks.values()){
             ArrayList<Chunk> nbrs = chunk.getNeighbours();
@@ -45,17 +49,17 @@ public class Chunker {
                 reg_chunk_shape[i] = Math.floorDiv(input_shape[i], dim_divisor);
             }
 
-            for (int i = 0; i < chunk_shape.length; i++){
-                // Chunk behind in dimension
-                Integer[] nbr = sp.clone();
-                nbr[i] -= reg_chunk_shape[i];
-                String nbr_string = Arrays.toString(nbr);
-                if (computed_chunks.containsKey(nbr_string)){ nbrs.add(computed_chunks.get(nbr_string)); }
-                // Chunk ahead in dimension
-                nbr = sp.clone();
-                nbr[i] += reg_chunk_shape[i];
-                nbr_string = Arrays.toString(nbr);
-                if (computed_chunks.containsKey(nbr_string)){ nbrs.add(computed_chunks.get(nbr_string)); }
+            // Checks all surrounding chunks (diagonally adjacent chunks need to be included)
+            for (int x = -reg_chunk_shape[0]; x <= reg_chunk_shape[0]; x += reg_chunk_shape[0]){
+                for (int y = -reg_chunk_shape[1]; y <= reg_chunk_shape[1]; y += reg_chunk_shape[1]){
+                    if (x != 0 || y != 0){
+                        Integer[] nbr = sp.clone();
+                        nbr[0] += x;
+                        nbr[1] += y;
+                        String nbr_string = Arrays.toString(nbr);
+                        if (computed_chunks.containsKey(nbr_string)){ nbrs.add(computed_chunks.get(nbr_string)); }
+                    }
+                }
             }
         }
     }
