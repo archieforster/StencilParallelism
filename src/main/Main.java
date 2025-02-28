@@ -16,9 +16,10 @@ import java.util.function.Function;
 
 public class Main {
 
+    private static final String results_path = System.getProperty("user.dir") + "\\Output\\";
+    private static final String resources_path = System.getProperty("user.dir") + "\\Resources\\";
+
     public static void main(String[] args) throws IOException {
-
-
         test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
         test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
         test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
@@ -38,7 +39,6 @@ public class Main {
 
     public static void test_pool_threads_with_chunks(int tests_per_datapoint) throws IOException {
         int TEST_NUM = tests_per_datapoint;
-        String results_path = ".\\Output\\";
         PrintWriter writer_virtual = new PrintWriter(results_path + "test_pool_vthread.csv");
         PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_platform.csv");
         for (int dim_divisor = 1; dim_divisor <= 8; dim_divisor++) {
@@ -83,7 +83,6 @@ public class Main {
 
     private static void test_pool_vs_per_chunk_2D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
-        String results_path = ".\\Output\\";
         PrintWriter writer = new PrintWriter(results_path);
         for (int dim_divisor = 1; dim_divisor <= 8; dim_divisor++) {
             long total = 0;
@@ -137,7 +136,6 @@ public class Main {
     private static void test_pool_vs_per_chunk_3D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
         int MAX_DIM_DIVISOR = 5;
-        String results_path = ".\\Output\\";
         PrintWriter writer = new PrintWriter(results_path);
 
         Stencil stencil = new Stencil(
@@ -294,8 +292,7 @@ public class Main {
             System.out.println("Activations " + activations + ": Select = " + (total_time_select / TEST_NUM) + " - Iterate = " + (total_time_iterate / TEST_NUM));
         }
 
-        String results_path = ".\\Output\\test_select_vs_iterate.csv";
-        PrintWriter writer = new PrintWriter(results_path);
+        PrintWriter writer = new PrintWriter(results_path + "test_select_vs_iterate.csv");
         for (int i = 0; i < select_results.length - 1; i++) {
             writer.append(select_results[i]+",");
         }
@@ -315,7 +312,7 @@ public class Main {
             int dim_divisor,
             int isl_loops
     ) {
-        String image_path = ".\\Resources\\lil_giraffe.jpg";
+        String image_path = resources_path + "lil_giraffe.jpg";
 
         ImageHandler image_handler = new ImageHandler();
         Integer[][] image_data = image_handler.loadPng(image_path);
