@@ -83,7 +83,7 @@ public class Main {
 
     private static void test_pool_vs_per_chunk_2D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
-        PrintWriter writer = new PrintWriter(results_path);
+        PrintWriter writer = new PrintWriter(results_path + "test_pool_vs_chunk_2d.csv");
         for (int dim_divisor = 1; dim_divisor <= 8; dim_divisor++) {
             long total = 0;
             for (int t = 0; t < TEST_NUM; t++) {
@@ -136,7 +136,7 @@ public class Main {
     private static void test_pool_vs_per_chunk_3D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
         int MAX_DIM_DIVISOR = 5;
-        PrintWriter writer = new PrintWriter(results_path);
+        PrintWriter writer = new PrintWriter(results_path + "test_pool_vs_chunk_3d");
 
         Stencil stencil = new Stencil(
                 new Integer[] {2,2,2},
