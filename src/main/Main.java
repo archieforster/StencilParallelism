@@ -313,6 +313,7 @@ public class Main {
             int isl_loops
     ) {
         String image_path = resources_path + "lil_giraffe.jpg";
+        System.out.println(image_path);
 
         ImageHandler image_handler = new ImageHandler();
         Integer[][] image_data = image_handler.loadPng(image_path);
