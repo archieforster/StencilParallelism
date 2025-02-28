@@ -11,6 +11,7 @@ public class ImageHandler {
         try {
             image = ImageIO.read(new File(filePath));
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
 
