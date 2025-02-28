@@ -16,8 +16,8 @@ import java.util.function.Function;
 
 public class Main {
 
-    private static final String results_path = System.getProperty("user.dir") + "\\Output\\";
-    private static final String resources_path = System.getProperty("user.dir") + "\\Resources\\";
+    private static final String results_path = System.getProperty("user.dir") + "/Output/";
+    private static final String resources_path = System.getProperty("user.dir") + "/Resources/";
 
     public static void main(String[] args) throws IOException {
         test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
