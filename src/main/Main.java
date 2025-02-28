@@ -366,26 +366,33 @@ public class Main {
 
         // Start recording
         long start_time = System.nanoTime();
-
         stencil_computer.execute();
+        long end_time = System.nanoTime();
+        long total_time = end_time - start_time;
 
         // Copy output to new array
         FlatNumArray output_r = new FlatNumArray(stencil_computer.getOutput().getShape(),
                 stencil_computer.getOutput().asArray());
         // Compute for green
         stencil_computer.setInputSpace(flat_data_g);
+        start_time = System.nanoTime();
         stencil_computer.execute();
+        end_time = System.nanoTime();
+        total_time += end_time - start_time;
         // Copy output to new array
         FlatNumArray output_g = new FlatNumArray(stencil_computer.getOutput().getShape(),
                 stencil_computer.getOutput().asArray());
         // Compute for blue
         stencil_computer.setInputSpace(flat_data_b);
+        start_time = System.nanoTime();
         stencil_computer.execute();
+        end_time = System.nanoTime();
+        total_time += end_time - start_time;
         // Copy output to new array
         FlatNumArray output_b = new FlatNumArray(stencil_computer.getOutput().getShape(),
                 stencil_computer.getOutput().asArray());
         // Stop recording
-        long end_time = System.nanoTime();
+
         // Rest is for storage, disable for test
 //
 //        // Repackage
@@ -407,7 +414,7 @@ public class Main {
 //        } catch (IOException e) {
 //            System.out.println(e);
 //        }
-        return (end_time - start_time) / 1_000_000;
+        return total_time / 1_000_000;
     }
 
     public static long computation_test_3d(
