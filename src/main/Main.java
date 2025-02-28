@@ -20,10 +20,10 @@ public class Main {
     private static final String resources_path = System.getProperty("user.dir") + "/Resources/";
 
     public static void main(String[] args) throws IOException {
-        test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
-        test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
-        test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
-        test_iterate_select_threshold(1); // Fullness of stencil for iterate & select in 3D
+        test_pool_vs_per_chunk_2D(10); // Same n.o. vthreads in pool & per chunk 2D
+        test_pool_vs_per_chunk_3D(10); // Same n.o. vthreads in pool & per chunk 3D
+        test_pool_threads_with_chunks(10); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
+        test_iterate_select_threshold(10); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
     }
 
@@ -136,7 +136,7 @@ public class Main {
     private static void test_pool_vs_per_chunk_3D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
         int MAX_DIM_DIVISOR = 5;
-        PrintWriter writer = new PrintWriter(results_path + "test_pool_vs_chunk_3d");
+        PrintWriter writer = new PrintWriter(results_path + "test_pool_vs_chunk_3d.csv");
 
         Stencil stencil = new Stencil(
                 new Integer[] {2,2,2},
@@ -313,7 +313,6 @@ public class Main {
             int isl_loops
     ) {
         String image_path = resources_path + "lil_giraffe.jpg";
-        System.out.println(image_path);
 
         ImageHandler image_handler = new ImageHandler();
         Integer[][] image_data = image_handler.loadPng(image_path);
