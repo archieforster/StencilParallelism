@@ -20,10 +20,10 @@ public class Main {
     private static final String resources_path = System.getProperty("user.dir") + "/Resources/";
 
     public static void main(String[] args) throws IOException {
-        test_pool_vs_per_chunk_2D(10); // Same n.o. vthreads in pool & per chunk 2D
-        test_pool_vs_per_chunk_3D(10); // Same n.o. vthreads in pool & per chunk 3D
-        test_pool_threads_with_chunks(10); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
-        test_iterate_select_threshold(10); // Fullness of stencil for iterate & select in 3D
+        test_pool_vs_per_chunk_2D(100); // Same n.o. vthreads in pool & per chunk 2D
+        test_pool_vs_per_chunk_3D(100); // Same n.o. vthreads in pool & per chunk 3D
+        test_pool_threads_with_chunks(100); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
+        test_iterate_select_threshold(100); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
     }
 
@@ -83,11 +83,13 @@ public class Main {
 
     private static void test_pool_vs_per_chunk_2D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
-        PrintWriter writer = new PrintWriter(results_path + "test_pool_vs_chunk_2d.csv");
+        PrintWriter writer_vthread = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_2d.csv");
+        PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_vs_chunk_platform_2d.csv");
         for (int dim_divisor = 1; dim_divisor <= 8; dim_divisor++) {
-            long total = 0;
+            long total_vthread = 0;
+            long total_platform = 0;
             for (int t = 0; t < TEST_NUM; t++) {
-                total += blur_giraffe_test(
+                total_vthread += blur_giraffe_test(
                         ComputeMode.ITERATE,
                         ThreadingMode.POOL,
                         ThreadType.VIRTUAL,
@@ -95,23 +97,36 @@ public class Main {
                         dim_divisor,
                         5
                 );
+                total_platform += blur_giraffe_test(
+                        ComputeMode.ITERATE,
+                        ThreadingMode.POOL,
+                        ThreadType.PLATFORM,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        5
+                );
             }
 
-            long avg = total / TEST_NUM;
+            long avg_vthread = total_vthread / TEST_NUM;
+            long avg_platform = total_platform / TEST_NUM;
             if (dim_divisor < 8){
-                writer.append(avg+",");
+                writer_vthread.append(avg_vthread+",");
+                writer_platform.append(avg_platform+",");
             } else {
-                writer.append(avg+"");
+                writer_vthread.append(avg_vthread+"");
+                writer_platform.append(avg_platform+"");
             }
             System.out.println("Pool with " + dim_divisor * dim_divisor + " threads & chunks");
         }
 
-        writer.println();
+        writer_vthread.println();
+        writer_platform.println();
 
         for (int dim_divisor = 1; dim_divisor <= 8; dim_divisor++) {
-            long total = 0;
+            long total_vthread = 0;
+            long total_platform = 0;
             for (int t = 0; t < TEST_NUM; t++) {
-                total += blur_giraffe_test(
+                total_vthread += blur_giraffe_test(
                         ComputeMode.ITERATE,
                         ThreadingMode.PER_CHUNK,
                         ThreadType.VIRTUAL,
@@ -119,18 +134,29 @@ public class Main {
                         dim_divisor,
                         5
                 );
+                total_platform += blur_giraffe_test(
+                        ComputeMode.ITERATE,
+                        ThreadingMode.PER_CHUNK,
+                        ThreadType.PLATFORM,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        5
+                );
             }
 
-            long avg = total / TEST_NUM;
+            long avg_vthread = total_vthread / TEST_NUM;
+            long avg_platform = total_platform / TEST_NUM;
             if (dim_divisor < 8){
-                writer.append(avg+",");
+                writer_vthread.append(avg_vthread+",");
+                writer_platform.append(avg_platform+",");
             } else {
-                writer.append(avg+"");
+                writer_vthread.append(avg_vthread+"");
+                writer_platform.append(avg_platform+"");
             }
             System.out.println("Per Chunk with " + dim_divisor * dim_divisor + " threads & chunks");
         }
 
-        writer.flush();
+        writer_vthread.flush();
     }
 
     private static void test_pool_vs_per_chunk_3D(int tests_per_datapoint) throws FileNotFoundException {
