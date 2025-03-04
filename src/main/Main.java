@@ -20,9 +20,9 @@ public class Main {
     private static final String resources_path = System.getProperty("user.dir") + "/Resources/";
 
     public static void main(String[] args) throws IOException {
+        test_pool_threads_with_chunks(100); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
         test_pool_vs_per_chunk_2D(100); // Same n.o. vthreads in pool & per chunk 2D
         test_pool_vs_per_chunk_3D(100); // Same n.o. vthreads in pool & per chunk 3D
-        test_pool_threads_with_chunks(100); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
         test_iterate_select_threshold(100); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
     }
@@ -41,10 +41,14 @@ public class Main {
         int TEST_NUM = tests_per_datapoint;
         PrintWriter writer_virtual = new PrintWriter(results_path + "test_pool_vthread.csv");
         PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_platform.csv");
+        PrintWriter writer_virtual_bi = new PrintWriter(results_path + "test_pool_vthread_bi.csv");
+        PrintWriter writer_platform_bi = new PrintWriter(results_path + "test_pool_platform_bi.csv");
         for (int dim_divisor = 1; dim_divisor <= 8; dim_divisor++) {
             for (int thread_c = 1; thread_c <= 16; thread_c++) {
                 long total_vthread = 0;
                 long total_platform = 0;
+                long total_vthread_bi = 0;
+                long total_platform_bi = 0;
                 for (int t = 0; t < TEST_NUM; t++){
                     total_vthread += blur_giraffe_test(
                             ComputeMode.ITERATE,
@@ -52,7 +56,7 @@ public class Main {
                             ThreadType.VIRTUAL,
                             thread_c,
                             dim_divisor,
-                            5
+                            ISLType.FIXED_LOOP
                     );
                     total_platform += blur_giraffe_test(
                             ComputeMode.ITERATE,
@@ -60,24 +64,54 @@ public class Main {
                             ThreadType.PLATFORM,
                             thread_c,
                             dim_divisor,
-                            5
+                            ISLType.FIXED_LOOP
+                    );
+                    total_vthread_bi += blur_giraffe_test(
+                            ComputeMode.ITERATE,
+                            ThreadingMode.POOL,
+                            ThreadType.VIRTUAL,
+                            thread_c,
+                            dim_divisor,
+                            ISLType.FIXED_LOOP_BORDERS
+                    );
+                    total_platform_bi += blur_giraffe_test(
+                            ComputeMode.ITERATE,
+                            ThreadingMode.POOL,
+                            ThreadType.PLATFORM,
+                            thread_c,
+                            dim_divisor,
+                            ISLType.FIXED_LOOP_BORDERS
                     );
                 }
                 long avg_vthread = total_vthread / TEST_NUM;
                 long avg_platform = total_platform / TEST_NUM;
+                long avg_vthread_bi = total_vthread_bi / TEST_NUM;
+                long avg_platform_bi = total_platform_bi / TEST_NUM;
                 if (thread_c < 16){
                     writer_virtual.append(avg_vthread+",");
                     writer_platform.append(avg_platform+",");
+                    writer_virtual_bi.append(avg_vthread_bi+",");
+                    writer_platform_bi.append(avg_platform_bi+",");
                 } else {
                     writer_virtual.append(avg_vthread+"");
                     writer_platform.append(avg_platform+"");
+                    writer_virtual_bi.append(avg_vthread_bi+"");
+                    writer_platform_bi.append(avg_platform_bi+"");
                 }
+                writer_virtual.flush();
+                writer_platform.flush();
+                writer_virtual_bi.flush();
+                writer_platform_bi.flush();
                 System.out.println("Pool of " + thread_c + " threads for " + dim_divisor*dim_divisor + " chunks");
             }
             writer_virtual.println();
-            writer_virtual.flush();
             writer_platform.println();
+            writer_virtual_bi.println();
+            writer_platform_bi.println();
+            writer_virtual.flush();
             writer_platform.flush();
+            writer_virtual_bi.flush();
+            writer_platform_bi.flush();
         }
     }
 
@@ -96,7 +130,7 @@ public class Main {
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
                 );
                 total_platform += blur_giraffe_test(
                         ComputeMode.ITERATE,
@@ -104,7 +138,7 @@ public class Main {
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
                 );
             }
 
@@ -118,6 +152,8 @@ public class Main {
                 writer_platform.append(avg_platform+"");
             }
             System.out.println("Pool with " + dim_divisor * dim_divisor + " threads & chunks");
+            writer_vthread.flush();
+            writer_platform.flush();
         }
 
         writer_vthread.println();
@@ -133,7 +169,7 @@ public class Main {
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
                 );
                 total_platform += blur_giraffe_test(
                         ComputeMode.ITERATE,
@@ -141,7 +177,7 @@ public class Main {
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
                 );
             }
 
@@ -155,9 +191,9 @@ public class Main {
                 writer_platform.append(avg_platform+"");
             }
             System.out.println("Per Chunk with " + dim_divisor * dim_divisor + " threads & chunks");
+            writer_vthread.flush();
+            writer_platform.flush();
         }
-        writer_vthread.flush();
-        writer_platform.flush();
     }
 
     private static void test_pool_vs_per_chunk_3D(int tests_per_datapoint) throws FileNotFoundException {
@@ -242,6 +278,8 @@ public class Main {
                 writer_platform.append(avg_platform+"");
             }
             System.out.println("Pool with " + dim_divisor * dim_divisor * dim_divisor + " threads & chunks");
+            writer_platform.flush();
+            writer_vthread.flush();
         }
 
         writer_vthread.println();
@@ -281,10 +319,9 @@ public class Main {
                 writer_platform.append(avg_platform+"");
             }
             System.out.println("Per Chunk with " + dim_divisor * dim_divisor * dim_divisor + " threads & chunks");
+            writer_platform.flush();
+            writer_vthread.flush();
         }
-
-        writer_platform.flush();
-        writer_vthread.flush();
 
     }
 
@@ -366,9 +403,10 @@ public class Main {
             ThreadType thread_type,
             int max_threads,
             int dim_divisor,
-            int isl_loops
+            ISLType isl_type
     ) {
         String image_path = resources_path + "lil_giraffe.jpg";
+        int isl_loops = 5;
 
         ImageHandler image_handler = new ImageHandler();
         Integer[][] image_data = image_handler.loadPng(image_path);
@@ -391,14 +429,6 @@ public class Main {
         FlatNumArray flat_data_b = new FlatNumArray(image_shape,image_data_b);
 
         Stencil stencil = new Stencil(
-//                new Integer[] {2,2},
-//                new Integer[][] {
-//                        {2,1,0,-1,-2},
-//                        {2,1,0,-1,-2},
-//                        {2,1,0,-1,-2},
-//                        {2,1,0,-1,-2},
-//                        {2,1,0,-1,-2}
-//                },
                 new Integer[] {1,1},
                 new Integer[][] {
                         {1,2,1},
@@ -414,7 +444,7 @@ public class Main {
         stencil_computer.setThreadingMode(threading_mode,max_threads);
         stencil_computer.setThreadType(thread_type);
         stencil_computer.setDimDivisor(dim_divisor);
-        stencil_computer.setISLType(ISLType.FIXED_LOOP);
+        stencil_computer.setISLType(isl_type);
         stencil_computer.setMaxLoops(isl_loops);
 
         // Start recording
@@ -522,14 +552,12 @@ public class Main {
                 if (nbr_count == 2 || nbr_count == 3){ // 2 or 3 neighbours survives
                     return 1;
                 }
-                // Greater than 3 neighbours dies
-                return 0;
+                return 0; // Greater than 3 neighbours dies
             }else{
                 if (nbr_count == 3){ // Dead cell becomes alive if it has 3 neighbours
                     return 1;
                 }
-                // Otherwise stays dead
-                return 0;
+                return 0; // Otherwise stays dead
             }
         };
         Stencil stencil = new Stencil(
