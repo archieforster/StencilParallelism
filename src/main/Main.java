@@ -120,9 +120,13 @@ public class Main {
         int MAX_DIM_DIVISOR = 16;
         PrintWriter writer_vthread = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_2d.csv");
         PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_vs_chunk_platform_2d.csv");
+        PrintWriter writer_vthread_bi = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_2d_bi.csv");
+        PrintWriter writer_platform_bi = new PrintWriter(results_path + "test_pool_vs_chunk_platform_2d_bi.csv");
         for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
             long total_vthread = 0;
             long total_platform = 0;
+            long total_vthread_bi = 0;
+            long total_platform_bi = 0;
             for (int t = 0; t < TEST_NUM; t++) {
                 total_vthread += blur_giraffe_test(
                         ComputeMode.ITERATE,
@@ -140,28 +144,56 @@ public class Main {
                         dim_divisor,
                         ISLType.FIXED_LOOP
                 );
+                total_vthread_bi += blur_giraffe_test(
+                        ComputeMode.ITERATE,
+                        ThreadingMode.POOL,
+                        ThreadType.VIRTUAL,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
+                );
+                total_platform_bi += blur_giraffe_test(
+                        ComputeMode.ITERATE,
+                        ThreadingMode.POOL,
+                        ThreadType.PLATFORM,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
+                );
             }
 
             long avg_vthread = total_vthread / TEST_NUM;
             long avg_platform = total_platform / TEST_NUM;
+            long avg_vthread_bi = total_vthread_bi / TEST_NUM;
+            long avg_platform_bi = total_platform_bi / TEST_NUM;
             if (dim_divisor < MAX_DIM_DIVISOR){
                 writer_vthread.append(avg_vthread+",");
                 writer_platform.append(avg_platform+",");
+                writer_vthread_bi.append(avg_vthread_bi+",");
+                writer_platform_bi.append(avg_platform_bi+",");
             } else {
                 writer_vthread.append(avg_vthread+"");
                 writer_platform.append(avg_platform+"");
+                writer_vthread_bi.append(avg_vthread_bi+"");
+                writer_platform_bi.append(avg_platform_bi+"");
             }
             System.out.println("Pool with " + dim_divisor * dim_divisor + " threads & chunks");
             writer_vthread.flush();
             writer_platform.flush();
+            writer_vthread_bi.flush();
+            writer_platform_bi.flush();
         }
 
         writer_vthread.println();
         writer_platform.println();
+        writer_vthread_bi.println();
+        writer_platform_bi.println();
 
         for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
             long total_vthread = 0;
             long total_platform = 0;
+            long total_vthread_bi = 0;
+            long total_platform_bi = 0;
             for (int t = 0; t < TEST_NUM; t++) {
                 total_vthread += blur_giraffe_test(
                         ComputeMode.ITERATE,
@@ -179,20 +211,45 @@ public class Main {
                         dim_divisor,
                         ISLType.FIXED_LOOP
                 );
+                total_vthread_bi += blur_giraffe_test(
+                        ComputeMode.ITERATE,
+                        ThreadingMode.PER_CHUNK,
+                        ThreadType.VIRTUAL,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
+                );
+                total_platform_bi += blur_giraffe_test(
+                        ComputeMode.ITERATE,
+                        ThreadingMode.PER_CHUNK,
+                        ThreadType.PLATFORM,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
+                );
+
             }
 
             long avg_vthread = total_vthread / TEST_NUM;
             long avg_platform = total_platform / TEST_NUM;
+            long avg_vthread_bi = total_vthread_bi / TEST_NUM;
+            long avg_platform_bi = total_platform_bi / TEST_NUM;
             if (dim_divisor < MAX_DIM_DIVISOR){
                 writer_vthread.append(avg_vthread+",");
                 writer_platform.append(avg_platform+",");
+                writer_vthread_bi.append(avg_vthread_bi+",");
+                writer_platform_bi.append(avg_platform_bi+",");
             } else {
                 writer_vthread.append(avg_vthread+"");
                 writer_platform.append(avg_platform+"");
+                writer_vthread_bi.append(avg_vthread_bi+"");
+                writer_platform_bi.append(avg_platform_bi+"");
             }
             System.out.println("Per Chunk with " + dim_divisor * dim_divisor + " threads & chunks");
             writer_vthread.flush();
             writer_platform.flush();
+            writer_vthread_bi.flush();
+            writer_platform_bi.flush();
         }
     }
 
@@ -201,6 +258,8 @@ public class Main {
         int MAX_DIM_DIVISOR = 7;
         PrintWriter writer_vthread = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d.csv");
         PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_vs_chunk_platform_3d.csv");
+        PrintWriter writer_vthread_bi = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d.csv");
+        PrintWriter writer_platform_bi = new PrintWriter(results_path + "test_pool_vs_chunk_platform_3d.csv");
 
         Stencil stencil = new Stencil(
                 new Integer[] {2,2,2},
@@ -247,6 +306,8 @@ public class Main {
         for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
             long total_vthread = 0;
             long total_platform = 0;
+            long total_vthread_bi = 0;
+            long total_platform_bi = 0;
             for (int t = 0; t < TEST_NUM; t++) {
                 total_vthread += computation_test_3d(
                         ComputeMode.SELECT,
@@ -255,7 +316,7 @@ public class Main {
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
                 );
                 total_platform += computation_test_3d(
                         ComputeMode.SELECT,
@@ -264,30 +325,60 @@ public class Main {
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
+                );
+                total_vthread_bi += computation_test_3d(
+                        ComputeMode.SELECT,
+                        stencil,
+                        ThreadingMode.PER_CHUNK,
+                        ThreadType.VIRTUAL,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
+                );
+                total_platform_bi += computation_test_3d(
+                        ComputeMode.SELECT,
+                        stencil,
+                        ThreadingMode.PER_CHUNK,
+                        ThreadType.PLATFORM,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
                 );
             }
 
             long avg_vthread = total_vthread / TEST_NUM;
             long avg_platform = total_platform / TEST_NUM;
+            long avg_vthread_bi = total_vthread_bi / TEST_NUM;
+            long avg_platform_bi = total_platform_bi / TEST_NUM;
             if (dim_divisor < MAX_DIM_DIVISOR){
                 writer_vthread.append(avg_vthread+",");
                 writer_platform.append(avg_platform+",");
+                writer_vthread_bi.append(avg_vthread_bi+",");
+                writer_platform_bi.append(avg_platform_bi+",");
             } else {
                 writer_vthread.append(avg_vthread+"");
                 writer_platform.append(avg_platform+"");
+                writer_vthread_bi.append(avg_vthread_bi+"");
+                writer_platform_bi.append(avg_platform_bi+"");
             }
             System.out.println("Pool with " + dim_divisor * dim_divisor * dim_divisor + " threads & chunks");
             writer_platform.flush();
             writer_vthread.flush();
+            writer_platform_bi.flush();
+            writer_vthread_bi.flush();
         }
 
         writer_vthread.println();
         writer_platform.println();
+        writer_vthread_bi.println();
+        writer_platform_bi.println();
 
         for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
             long total_vthread = 0;
             long total_platform = 0;
+            long total_vthread_bi = 0;
+            long total_platform_bi = 0;
             for (int t = 0; t < TEST_NUM; t++) {
                 total_vthread += computation_test_3d(
                         ComputeMode.SELECT,
@@ -296,7 +387,7 @@ public class Main {
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
                 );
                 total_platform += computation_test_3d(
                         ComputeMode.SELECT,
@@ -305,22 +396,48 @@ public class Main {
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
-                        5
+                        ISLType.FIXED_LOOP
+                );
+                total_vthread_bi += computation_test_3d(
+                        ComputeMode.SELECT,
+                        stencil,
+                        ThreadingMode.POOL,
+                        ThreadType.VIRTUAL,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
+                );
+                total_platform_bi += computation_test_3d(
+                        ComputeMode.SELECT,
+                        stencil,
+                        ThreadingMode.POOL,
+                        ThreadType.PLATFORM,
+                        dim_divisor * dim_divisor, // square so that it's one per chunk
+                        dim_divisor,
+                        ISLType.FIXED_LOOP_BORDERS
                 );
             }
 
             long avg_vthread = total_vthread / TEST_NUM;
             long avg_platform = total_platform / TEST_NUM;
+            long avg_vthread_bi = total_vthread_bi / TEST_NUM;
+            long avg_platform_bi = total_platform_bi / TEST_NUM;
             if (dim_divisor < MAX_DIM_DIVISOR){
                 writer_vthread.append(avg_vthread+",");
                 writer_platform.append(avg_platform+",");
+                writer_vthread_bi.append(avg_vthread_bi+",");
+                writer_platform_bi.append(avg_platform_bi+",");
             } else {
                 writer_vthread.append(avg_vthread+"");
                 writer_platform.append(avg_platform+"");
+                writer_vthread_bi.append(avg_vthread_bi+"");
+                writer_platform_bi.append(avg_platform_bi+"");
             }
             System.out.println("Per Chunk with " + dim_divisor * dim_divisor * dim_divisor + " threads & chunks");
             writer_platform.flush();
             writer_vthread.flush();
+            writer_platform_bi.flush();
+            writer_vthread_bi.flush();
         }
 
     }
@@ -368,7 +485,7 @@ public class Main {
                         ThreadType.VIRTUAL,
                         5*5*5,
                         5,
-                        1
+                        ISLType.FIXED_LOOP
                 );
                 total_time_iterate += computation_test_3d(
                         ComputeMode.ITERATE,
@@ -377,7 +494,7 @@ public class Main {
                         ThreadType.VIRTUAL,
                         5*5*5,
                         5,
-                        1
+                        ISLType.FIXED_LOOP
                 );
             }
             select_results[activations/7] = total_time_select / TEST_NUM;
@@ -507,11 +624,12 @@ public class Main {
             ThreadType thread_type,
             int max_threads,
             int dim_divisor,
-            int isl_loops
+            ISLType isl_type
     ){
+        int isl_loops = 5;
         stencil.setCompMode(stencil_compute_mode);
 
-        Integer[] input_shape = new Integer[] {50,50,50};
+        Integer[] input_shape = new Integer[] {100,100,100};
         FlatNumArray input = new FlatNumArray(input_shape);
         for (int i = 0; i < input_shape[0]; i++){
             for (int j = 0; j < input_shape[1]; j++){
@@ -525,7 +643,7 @@ public class Main {
         stencil_computer.setThreadingMode(threading_mode,max_threads);
         stencil_computer.setThreadType(thread_type);
         stencil_computer.setDimDivisor(dim_divisor);
-        stencil_computer.setISLType(ISLType.FIXED_LOOP);
+        stencil_computer.setISLType(isl_type);
         stencil_computer.setMaxLoops(isl_loops);
 
         long start_time = System.nanoTime();
