@@ -29,6 +29,7 @@ public class Main {
         } catch (Exception e) {
             PrintWriter w = new PrintWriter(results_path+"error.txt");
             w.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
 
     }
@@ -264,8 +265,8 @@ public class Main {
         int MAX_DIM_DIVISOR = 7;
         PrintWriter writer_vthread = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d.csv");
         PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_vs_chunk_platform_3d.csv");
-        PrintWriter writer_vthread_bi = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d.csv");
-        PrintWriter writer_platform_bi = new PrintWriter(results_path + "test_pool_vs_chunk_platform_3d.csv");
+        PrintWriter writer_vthread_bi = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d_bi.csv");
+        PrintWriter writer_platform_bi = new PrintWriter(results_path + "test_pool_vs_chunk_platform_3d_bi.csv");
 
         Stencil stencil = new Stencil(
                 new Integer[] {2,2,2},
