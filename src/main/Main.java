@@ -21,10 +21,10 @@ public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
         try {
-            test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
-            test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
-            test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
-            test_iterate_select_threshold(1); // Fullness of stencil for iterate & select in 3D
+            test_pool_threads_with_chunks(25); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
+            test_pool_vs_per_chunk_2D(25); // Same n.o. vthreads in pool & per chunk 2D
+            test_pool_vs_per_chunk_3D(25); // Same n.o. vthreads in pool & per chunk 3D
+            test_iterate_select_threshold(25); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
         } catch (Exception e) {
             PrintWriter w = new PrintWriter(results_path+"error.txt");
@@ -319,7 +319,7 @@ public class Main {
                 total_vthread += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.PER_CHUNK,
+                        ThreadingMode.POOL,
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
@@ -328,7 +328,7 @@ public class Main {
                 total_platform += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.PER_CHUNK,
+                        ThreadingMode.POOL,
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
@@ -337,7 +337,7 @@ public class Main {
                 total_vthread_bi += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.PER_CHUNK,
+                        ThreadingMode.POOL,
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
@@ -346,7 +346,7 @@ public class Main {
                 total_platform_bi += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.PER_CHUNK,
+                        ThreadingMode.POOL,
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
@@ -390,7 +390,7 @@ public class Main {
                 total_vthread += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.POOL,
+                        ThreadingMode.PER_CHUNK,
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
@@ -399,7 +399,7 @@ public class Main {
                 total_platform += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.POOL,
+                        ThreadingMode.PER_CHUNK,
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
@@ -408,7 +408,7 @@ public class Main {
                 total_vthread_bi += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.POOL,
+                        ThreadingMode.PER_CHUNK,
                         ThreadType.VIRTUAL,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
@@ -417,7 +417,7 @@ public class Main {
                 total_platform_bi += computation_test_3d(
                         ComputeMode.SELECT,
                         stencil,
-                        ThreadingMode.POOL,
+                        ThreadingMode.PER_CHUNK,
                         ThreadType.PLATFORM,
                         dim_divisor * dim_divisor, // square so that it's one per chunk
                         dim_divisor,
