@@ -262,7 +262,7 @@ public class Main {
 
     private static void test_pool_vs_per_chunk_3D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
-        int MAX_DIM_DIVISOR = 7;
+        int MAX_DIM_DIVISOR = 6;
         PrintWriter writer_vthread = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d.csv");
         PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_vs_chunk_platform_3d.csv");
         PrintWriter writer_vthread_bi = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d_bi.csv");
@@ -638,7 +638,7 @@ public class Main {
         int isl_loops = 5;
         stencil.setCompMode(stencil_compute_mode);
 
-        Integer[] input_shape = new Integer[] {100,100,100};
+        Integer[] input_shape = new Integer[] {60,60,60};
         FlatNumArray input = new FlatNumArray(input_shape);
         for (int i = 0; i < input_shape[0]; i++){
             for (int j = 0; j < input_shape[1]; j++){
