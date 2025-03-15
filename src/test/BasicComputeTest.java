@@ -34,7 +34,7 @@ public class BasicComputeTest {
 
         Computer computer = new Computer(inputSpace, stencil);
         computer.setThreadingMode(ThreadingMode.POOL,4);
-        computer.setDimDivisor(3);
+        computer.setDimDivisor(new Integer[]{3,3});
         computer.setISLType(ISLType.FIXED_LOOP);
         computer.setMaxLoops(3);
         computer.execute();

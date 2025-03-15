@@ -1,6 +1,7 @@
 package Processing;
 
 import java.lang.Thread;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -26,7 +27,7 @@ public class Computer {
     private ThreadPool threadPool;
     private int max_threads;
     private ThreadType thread_type;
-    private int dim_divisor;
+    private Integer[] dim_divisor;
     private int iteration_count;
     private SpaceHandler space_handler;
     private Stencil stencil;
@@ -39,7 +40,8 @@ public class Computer {
     public Computer(FlatNumArray input_space, Stencil stencil) {
         space_handler = new SpaceHandler(input_space);
         this.stencil = stencil;
-        dim_divisor = 1; // default divisor, no chunking
+        dim_divisor = new Integer[stencil.getShape().length];// default divisor of 1 per dim, no chunking
+        Arrays.fill(dim_divisor, 1);
         // default to fixed ISL with one iteration
         isl_type = ISLType.FIXED_LOOP;
         // default to vthread per chunk
@@ -58,8 +60,7 @@ public class Computer {
         this.stencil = stencil;
     }
 
-    public void setDimDivisor(int dim_divisor){
-        this.dim_divisor = dim_divisor;
+    public void setDimDivisor(Integer[] dim_divisor){this.dim_divisor = dim_divisor;
     }
 
     public void setISLType(ISLType isl_type){

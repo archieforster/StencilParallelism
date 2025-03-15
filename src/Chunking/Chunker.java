@@ -6,11 +6,14 @@ import java.util.HashMap;
 
 public class Chunker {
     Integer[] input_shape;
-    int dim_divisor;
+    Integer[] dim_divisor;
     // Use Start Point of chunk as key
     HashMap<String, Chunk> computed_chunks;
 
-    public Chunker(Integer[] input_shape, int dim_divisor) {
+    public Chunker(Integer[] input_shape, Integer[] dim_divisor) {
+        if (input_shape.length != dim_divisor.length) {
+            throw new IllegalArgumentException("Input shape and dim divisors must be the same length");
+        }
         this.input_shape = input_shape;
         this.dim_divisor = dim_divisor;
     }
@@ -22,7 +25,7 @@ public class Chunker {
             computed_chunks = reg_chunk_1d(input_shape);
         }
         else if (dimN == 2){
-            computed_chunks = reg_chunk_2d(input_shape);
+            computed_chunks = reg_chunk_2d(input_shape,dim_divisor);
         }
         else if (dimN == 3){
             computed_chunks = reg_chunk_3d(input_shape);
@@ -45,7 +48,7 @@ public class Chunker {
             Integer[] chunk_shape = chunk.getChunkShape();
             Integer[] reg_chunk_shape = new Integer[chunk_shape.length];
             for (int i = 0; i < reg_chunk_shape.length; i++){
-                reg_chunk_shape[i] = Math.floorDiv(input_shape[i], dim_divisor);
+                reg_chunk_shape[i] = Math.floorDiv(input_shape[i], dim_divisor[i]);
             }
 
             // 1D Case
@@ -102,19 +105,19 @@ public class Chunker {
      * @return
      */
     private HashMap<String,Chunk> reg_chunk_1d(Integer[] input_shape){
-        Integer[] chunk_size = new Integer[] {Math.floorDiv(input_shape[0], dim_divisor)};
+        Integer[] chunk_size = new Integer[] {Math.floorDiv(input_shape[0], dim_divisor[0])};
         HashMap<String, Chunk> res_chunks = new HashMap<>();
 
         Integer[] sp = new Integer[] {0};
 
         // Do regular chunks
         Integer[] chunk_space = chunk_size;
-        for (int i = 0; i < dim_divisor - 1; i++){
+        for (int i = 0; i < dim_divisor[0] - 1; i++){
             res_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
             sp[0] += chunk_space[0];
         }
         // Do final chunk to encapsulate rest of space
-        chunk_space = new Integer[]{chunk_size[0] + (input_shape[0] % dim_divisor)};
+        chunk_space = new Integer[]{chunk_size[0] + (input_shape[0] % dim_divisor[0])};
         res_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
 
         return res_chunks;
@@ -124,10 +127,10 @@ public class Chunker {
      * Chucks the input space shape assuming it's 2D
      * @return
      */
-    private HashMap<String,Chunk> reg_chunk_2d(Integer[] input_shape){
+    private HashMap<String,Chunk> reg_chunk_2d(Integer[] input_shape, Integer[] dim_divisor){
         Integer[] chunk_size = new Integer[] {
-                Math.floorDiv(input_shape[0], dim_divisor),
-                Math.floorDiv(input_shape[1], dim_divisor)
+                Math.floorDiv(input_shape[0], dim_divisor[0]),
+                Math.floorDiv(input_shape[1], dim_divisor[1])
         };
         HashMap<String, Chunk> res_chunks = new HashMap<>();
 
@@ -135,32 +138,32 @@ public class Chunker {
         Integer[] chunk_space;
 
         // Loop in x direction until last x-dim chunk
-        for (int x = 0; x < dim_divisor - 1; x++){
+        for (int x = 0; x < dim_divisor[0] - 1; x++){
             sp[1] = 0;
             // Loop in y direction until last y-dim chunk
             chunk_space = chunk_size;
-            for (int y = 0; y < dim_divisor - 1; y++){
+            for (int y = 0; y < dim_divisor[1] - 1; y++){
                 // Do regular chunks
                 res_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
                 sp[1] += chunk_space[1];
             }
             // Do final irregular y-dim chunk
-            chunk_space = new Integer[]{chunk_size[0], chunk_size[1] + (input_shape[1] % dim_divisor)};
+            chunk_space = new Integer[]{chunk_size[0], chunk_size[1] + (input_shape[1] % dim_divisor[1])};
             res_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
             sp[0] += chunk_space[0];
         }
         // Do final loop of irregular x-dim chunk
-        chunk_space = new Integer[]{chunk_size[0] + (input_shape[0] % dim_divisor), chunk_size[1]};
+        chunk_space = new Integer[]{chunk_size[0] + (input_shape[0] % dim_divisor[0]), chunk_size[1]};
         sp[1] = 0;
-        for (int y = 0; y < dim_divisor - 1; y++){
+        for (int y = 0; y < dim_divisor[1] - 1; y++){
             // Do regular chunks;
             res_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
             sp[1] += chunk_space[1];
         }
         // Do final irregular x-dim and y-dim chunk
         chunk_space = new Integer[]{
-                chunk_size[0] + (input_shape[0] % dim_divisor),
-                chunk_size[1] + (input_shape[1] % dim_divisor)
+                chunk_size[0] + (input_shape[0] % dim_divisor[0]),
+                chunk_size[1] + (input_shape[1] % dim_divisor[1])
         };
         res_chunks.put(Arrays.toString(sp.clone()), new Chunk(sp.clone(), chunk_space.clone()));
 
@@ -173,9 +176,9 @@ public class Chunker {
      */
     private HashMap<String,Chunk> reg_chunk_3d(Integer[] input_shape){
         Integer[] chunk_size = new Integer[] {
-                Math.floorDiv(input_shape[0], dim_divisor),
-                Math.floorDiv(input_shape[1], dim_divisor),
-                Math.floorDiv(input_shape[2], dim_divisor)
+                Math.floorDiv(input_shape[0], dim_divisor[0]),
+                Math.floorDiv(input_shape[1], dim_divisor[1]),
+                Math.floorDiv(input_shape[2], dim_divisor[2])
         };
         HashMap<String, Chunk> res_chunks = new HashMap<>();
 
@@ -185,10 +188,12 @@ public class Chunker {
         Integer[] subspace = new Integer[]{
                 input_shape[1],
                 input_shape[2]};
-        HashMap<String,Chunk> chunked_subspace_2d = reg_chunk_2d(subspace);
+        HashMap<String,Chunk> chunked_subspace_2d = reg_chunk_2d(subspace,
+                new Integer[] {dim_divisor[1],dim_divisor[2]}
+        );
 
         // Regular chunks in x direction
-        for (int x = 0; x < dim_divisor - 1; x++){
+        for (int x = 0; x < dim_divisor[0] - 1; x++){
             chunk_space = chunk_size;
             for (Chunk chunk : chunked_subspace_2d.values()){
                 sp[1] = chunk.getStartPoint()[0];
@@ -202,7 +207,7 @@ public class Chunker {
         }
         // Irregular chunks in x direction
         chunk_space = new Integer[]{
-                chunk_size[0] + (input_shape[0] % dim_divisor),
+                chunk_size[0] + (input_shape[0] % dim_divisor[0]),
                 chunk_size[1],
                 chunk_size[2]
         };

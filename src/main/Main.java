@@ -21,9 +21,9 @@ public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
         try {
-            test_pool_threads_with_chunks(25); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
-            test_pool_vs_per_chunk_2D(25); // Same n.o. vthreads in pool & per chunk 2D
-            test_pool_vs_per_chunk_3D(25); // Same n.o. vthreads in pool & per chunk 3D
+            test_pool_threads_with_chunks(100); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
+            test_pool_vs_per_chunk_2D(100); // Same n.o. vthreads in pool & per chunk 2D
+            test_pool_vs_per_chunk_3D(100); // Same n.o. vthreads in pool & per chunk 3D
             test_iterate_select_threshold(25); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
         } catch (Exception e) {
@@ -563,11 +563,13 @@ public class Main {
         );
         stencil.setCompMode(stencil_compute_mode);
 
+        Integer[] dim_divisor_arr = new Integer[]{dim_divisor,dim_divisor};
+
         // Compute for red
         Computer stencil_computer = new Computer(flat_data_r,stencil);
         stencil_computer.setThreadingMode(threading_mode,max_threads);
         stencil_computer.setThreadType(thread_type);
-        stencil_computer.setDimDivisor(dim_divisor);
+        stencil_computer.setDimDivisor(dim_divisor_arr);
         stencil_computer.setISLType(isl_type);
         stencil_computer.setMaxLoops(isl_loops);
 
@@ -646,10 +648,12 @@ public class Main {
             }
         }
 
+        Integer[] dim_divisor_arr = new Integer[]{dim_divisor,dim_divisor,dim_divisor};
+
         Computer stencil_computer = new Computer(input,stencil);
         stencil_computer.setThreadingMode(threading_mode,max_threads);
         stencil_computer.setThreadType(thread_type);
-        stencil_computer.setDimDivisor(dim_divisor);
+        stencil_computer.setDimDivisor(dim_divisor_arr);
         stencil_computer.setISLType(isl_type);
         stencil_computer.setMaxLoops(isl_loops);
 
@@ -719,11 +723,13 @@ public class Main {
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         };
 
+        Integer[] dim_divisor_arr = new Integer[]{dim_divisor,dim_divisor};
+
         FlatNumArray input_data = new FlatNumArray(input_shape,input);
         Computer computer = new Computer(input_data,stencil);
         computer.setThreadingMode(threading_mode);
         computer.setThreadType(thread_type);
-        computer.setDimDivisor(dim_divisor);
+        computer.setDimDivisor(dim_divisor_arr);
         computer.setISLType(ISLType.FIXED_LOOP);
         computer.setMaxLoops(isl_loops);
 
