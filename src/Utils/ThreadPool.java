@@ -47,15 +47,19 @@ public class ThreadPool {
     public void executeAll(){
         active_threads = 0;
         Runnable thread_task = () -> {
+            // Poll queue whilst there are tasks or active threads
             while (!run_queue.isEmpty() || active_threads > 0){
                 Runnable task = run_queue.poll();
+                // Checks if poll returned a task
                 if (task != null) {
+                    // Safe increment of shared active_threads
                     active_threads_lock.lock();
                     active_threads++;
                     active_threads_lock.unlock();
 
                     task.run();
 
+                    // Safe decrement of shared active_threads when task complete
                     active_threads_lock.lock();
                     active_threads--;
                     active_threads_lock.unlock();
@@ -67,25 +71,6 @@ public class ThreadPool {
             threads[i] = thread_factory.newThread(thread_task);
             threads[i].start();
         }
-
-//        // Utilise lazy eval:
-//        // 1) Check if threads is not initialised (i.e. not started)
-//        // 2) Check all threads are inactive (i.e. running processes)
-//        // 3) Check contents of queue (i.e. if all processes are complete)
-//        while(threads[0] != null || !run_queue.isEmpty() || threads_active()){
-//            for(int i = 0; i < threads.length; i++){
-//                // If thread is inactive or uninitialised, allocate & start new task
-//                if(threads[i] == null || !threads[i].isAlive()){
-//                    Runnable task = run_queue.poll();
-//                    // Ensure task is non-null (run_queue has been emptied)
-//                    // since last check
-//                    if(task != null){
-//                        threads[i] = thread_factory.newThread(task);
-//                        threads[i].start();
-//                    }
-//                }
-//            }
-//        }
     }
 
     private boolean threads_active(){

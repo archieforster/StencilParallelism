@@ -32,10 +32,8 @@ public class Computer {
     private SpaceHandler space_handler;
     private Stencil stencil;
     private Thread[] threads;
-    private ConcurrentHashMap<Chunk, ChunkExecutionData> chunk_execution_data;
     private Chunk[] chunks;
     private Semaphore complete_chunks;
-    private Lock lock = new ReentrantLock();
 
     public Computer(FlatNumArray input_space, Stencil stencil) {
         space_handler = new SpaceHandler(input_space);
@@ -110,7 +108,6 @@ public class Computer {
         Integer[] space_shape = space_handler.getSpace(0).getShape();
         Chunker chunker = new Chunker(space_shape,dim_divisor);
         chunks = chunker.getRegularChunks();
-        chunk_execution_data = new ConcurrentHashMap<>();
         complete_chunks = new Semaphore(0);
         for (Chunk chunk: chunks) {
             ChunkExecutionData chunk_data = new ChunkExecutionData();
@@ -127,7 +124,6 @@ public class Computer {
 
             }
             chunk.setExecutionData(chunk_data);
-            chunk_execution_data.put(chunk, chunk_data);
         }
     }
 
@@ -139,12 +135,12 @@ public class Computer {
      * @return
      */
     private boolean check_nbrs_incomplete(Chunk chunk){
-        ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
+        ChunkExecutionData chunk_data = chunk.getExecutionData();
 
         // Determine if neighbours have completed last iteration, meaning they
         // are on the same iteration or ahead
         for (Chunk nbr : chunk.getNeighbours()){
-            ChunkExecutionData nbr_data = chunk_execution_data.get(nbr);
+            ChunkExecutionData nbr_data = nbr.getExecutionData();
             if (nbr_data.iters_complete < chunk_data.iters_complete) {
                 return true;
             };
@@ -177,18 +173,13 @@ public class Computer {
                 task = (chunk_i) -> {
                     // Get chunk & data
                     Chunk chunk = chunks[chunk_i];
-                    ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
-
-                    // Loop until completed max iterations (non-inclusive as iterations
-                    // counted from 0
+                    ChunkExecutionData chunk_data = chunk.getExecutionData();
+                    // Loop until completed max iterations (non-inclusive as iterations counted from 0
                     for (int iteration = 1; iteration <= iteration_count; iteration++) {
                         // Use semaphores to wait until all nbrs are complete
                         try {
                             chunk_data.nbrs_complete[iteration - 1].acquire(chunk.getNeighbours().size());
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-
+                        } catch (InterruptedException e) { throw new RuntimeException(e); }
                         // Execute over space
                         execute_over_space(chunk.getStartPoint(), chunk.getChunkShape(), iteration);
                         // Update execution data
@@ -196,21 +187,18 @@ public class Computer {
                             chunk_data.iters_complete++;
                             if (iteration < iteration_count) {
                                 for (Chunk nbr: chunk.getNeighbours()) {
-                                    ChunkExecutionData nbr_data = chunk_execution_data.get(nbr);
+                                    ChunkExecutionData nbr_data = nbr.getExecutionData();
                                     nbr_data.nbrs_complete[iteration].release();
                                 }
                             }
                         }
                     }
-
-                    lock.lock();
                     // Write results to output space
                     space_handler.writeToOutput(chunk, chunk_data.iters_complete);
-                    lock.unlock();
                     complete_chunks.release();
                 };
 
-                execute_with_chunk_threads(task);
+                execute_with_assigned_threads(task);
                 break;
 
             case POOL:
@@ -240,9 +228,7 @@ public class Computer {
                         threadPool.addTask(new_task);
                     } else {
                         // Chunk must be complete, write result to output space
-                        lock.lock();
                         space_handler.writeToOutput(chunk, chunk_data.iters_complete);
-                        lock.unlock();
                         complete_chunks.release();
                     }
                 };
@@ -265,7 +251,7 @@ public class Computer {
                 task = (chunk_i) -> {
                     // Get chunk & data
                     Chunk chunk = chunks[chunk_i];
-                    ChunkExecutionData chunk_data = chunk_execution_data.get(chunk);
+                    ChunkExecutionData chunk_data = chunk.getExecutionData();
 
                     // Loop until completed max iterations (non-inclusive as iterations
                     // counted from 0
@@ -285,21 +271,18 @@ public class Computer {
                             chunk_data.iters_complete++;
                             if (iteration < iteration_count) {
                                 for (Chunk nbr: chunk.getNeighbours()) {
-                                    ChunkExecutionData nbr_data = chunk_execution_data.get(nbr);
+                                    ChunkExecutionData nbr_data = nbr.getExecutionData();
                                     nbr_data.nbrs_complete[iteration].release();
                                 }
                             }
                         }
                     }
-
-                    lock.lock();
                     // Write results to output space
                     space_handler.writeToOutput(chunk, chunk_data.iters_complete);
-                    lock.unlock();
                     complete_chunks.release();
                 };
 
-                execute_with_chunk_threads(task);
+                execute_with_assigned_threads(task);
                 break;
 
             case POOL:
@@ -313,13 +296,11 @@ public class Computer {
                 BiConsumer<Integer, Integer> recursive_task = (chunk_index, iteration) -> {
                     Chunk chunk = chunks[chunk_index];
                     ChunkExecutionData chunk_data = chunk.getExecutionData();
-
                     // Execute inner
                     if (!chunk_data.inner_complete){
                         execute_over_inner(chunk.getStartPoint(), chunk.getChunkShape(), iteration);
                         chunk_data.inner_complete = true;
                     }
-
                     // Puts task back into queue if neighbours are not complete
                     if (check_nbrs_incomplete(chunk) || iteration != chunk_data.iters_complete + 1) {
                         Runnable rec_task = () -> threadPool.getRecursiveTask().accept(chunk_index, iteration);
@@ -339,9 +320,7 @@ public class Computer {
                         threadPool.addTask(new_task);
                     } else {
                         // Chunk must be complete, write result to output space
-                        lock.lock();
                         space_handler.writeToOutput(chunk, chunk_data.iters_complete);
-                        lock.unlock();
                         complete_chunks.release();
                     }
                 };
@@ -378,16 +357,14 @@ public class Computer {
      * Blocking. Executes task per chunk with a thread assigned per chunk.
      * @param chunk_task Task assigned to each chunk, task uses chunk index as a parameter
      */
-    private void execute_with_chunk_threads(Consumer<Integer> chunk_task){
+    private void execute_with_assigned_threads(Consumer<Integer> chunk_task){
         ThreadFactory threadFactory = getThreadFactory();
-
         // Create VThread for each chunk
         threads = new Thread[chunks.length];
         for (int i = 0; i < chunks.length; i++) {
             int chunk_i = i;
             threads[i] = threadFactory.newThread( () -> chunk_task.accept(chunk_i) );
         }
-
         // Start each thread
         for (Thread thread : threads) {
             thread.start();
@@ -398,7 +375,6 @@ public class Computer {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     /**
