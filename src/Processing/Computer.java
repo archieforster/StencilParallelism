@@ -214,7 +214,7 @@ public class Computer {
                     ChunkExecutionData chunk_data = chunk.getExecutionData();
 
                     // Puts task back into queue if neighbours are not complete
-                    if (check_nbrs_incomplete(chunk) || iteration != chunk_data.iters_complete + 1) {
+                    if (check_nbrs_incomplete(chunk)) {
                         Runnable rec_task = () -> threadPool.getRecursiveTask().accept(chunk_index, iteration);
                         threadPool.addTask(rec_task);
                         return;
@@ -302,7 +302,7 @@ public class Computer {
                         chunk_data.inner_complete = true;
                     }
                     // Puts task back into queue if neighbours are not complete
-                    if (check_nbrs_incomplete(chunk) || iteration != chunk_data.iters_complete + 1) {
+                    if (check_nbrs_incomplete(chunk)) {
                         Runnable rec_task = () -> threadPool.getRecursiveTask().accept(chunk_index, iteration);
                         threadPool.addTask(rec_task);
                         return;
