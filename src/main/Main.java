@@ -507,17 +507,17 @@ public class Main {
         PrintWriter writer = new PrintWriter(results_path + "test_select_vs_iterate.csv");
         long avg = 0;
 
-        for (int i = 0; i < (7*7) - 1; i++) {
+        for (int i = 0; i < (7*7)-1; i++) {
             avg = Arrays.stream(select_results[i]).sum() / TEST_NUM;
             writer.append(avg + ",");
         }
-        avg = Arrays.stream(select_results[7*7]).sum() / TEST_NUM;
+        avg = Arrays.stream(select_results[(7*7)-1]).sum() / TEST_NUM;
         writer.append(avg + "\n");
-        for (int i = 0; i < (7*7) - 1; i++) {
+        for (int i = 0; i < (7*7)-1; i++) {
             avg = Arrays.stream(iterate_results[i]).sum() / TEST_NUM;
             writer.append(avg + ",");
         }
-        avg = Arrays.stream(iterate_results[7*7]).sum() / TEST_NUM;
+        avg = Arrays.stream(iterate_results[(7*7)-1]).sum() / TEST_NUM;
         writer.append(avg + "\n");
         writer.flush();
     }
