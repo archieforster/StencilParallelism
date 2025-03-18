@@ -100,22 +100,22 @@ public class Main {
         long avg = 0;
         for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
             for (int thread_c = 1; thread_c < MAX_THREAD_COUNT; thread_c++) {
-                avg = Arrays.stream(res_vthread[dim_divisor][thread_c]).sum() / TEST_NUM;
+                avg = Arrays.stream(res_vthread[dim_divisor-1][thread_c-1]).sum() / TEST_NUM;
                 writer_virtual.append(avg + ",");
-                avg = Arrays.stream(res_platform[dim_divisor][thread_c]).sum() / TEST_NUM;
+                avg = Arrays.stream(res_platform[dim_divisor-1][thread_c-1]).sum() / TEST_NUM;
                 writer_platform.append(avg + ",");
-                avg = Arrays.stream(res_vthread_bi[dim_divisor][thread_c]).sum() / TEST_NUM;
+                avg = Arrays.stream(res_vthread_bi[dim_divisor-1][thread_c-1]).sum() / TEST_NUM;
                 writer_virtual_bi.append(avg + ",");
-                avg = Arrays.stream(res_platform_bi[dim_divisor][thread_c]).sum() / TEST_NUM;
+                avg = Arrays.stream(res_platform_bi[dim_divisor-1][thread_c-1]).sum() / TEST_NUM;
                 writer_platform_bi.append(avg + ",");
             }
-            avg = Arrays.stream(res_vthread[dim_divisor][MAX_THREAD_COUNT]).sum() / TEST_NUM;
+            avg = Arrays.stream(res_vthread[dim_divisor-1][MAX_THREAD_COUNT-1]).sum() / TEST_NUM;
             writer_virtual.append(avg + "\n");
-            avg = Arrays.stream(res_platform[dim_divisor][MAX_THREAD_COUNT]).sum() / TEST_NUM;
+            avg = Arrays.stream(res_platform[dim_divisor-1][MAX_THREAD_COUNT-1]).sum() / TEST_NUM;
             writer_platform.append(avg + "\n");
-            avg = Arrays.stream(res_vthread_bi[dim_divisor][MAX_THREAD_COUNT]).sum() / TEST_NUM;
+            avg = Arrays.stream(res_vthread_bi[dim_divisor-1][MAX_THREAD_COUNT-1]).sum() / TEST_NUM;
             writer_virtual_bi.append(avg + "\n");
-            avg = Arrays.stream(res_platform_bi[dim_divisor][MAX_THREAD_COUNT]).sum() / TEST_NUM;
+            avg = Arrays.stream(res_platform_bi[dim_divisor-1][MAX_THREAD_COUNT-1]).sum() / TEST_NUM;
             writer_platform_bi.append(avg + "\n");
         }
         writer_virtual.flush();
