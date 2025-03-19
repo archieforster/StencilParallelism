@@ -22,9 +22,9 @@ public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
         try {
-            test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
-            test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
-            test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
+//            test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
+//            test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
+//            test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
             test_iterate_select_threshold(1); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
         } catch (Exception e) {
