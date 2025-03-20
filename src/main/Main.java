@@ -22,10 +22,10 @@ public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
         try {
-            test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
-            test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
-            test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
-            test_iterate_select_threshold(1); // Fullness of stencil for iterate & select in 3D
+            test_pool_threads_with_chunks(50); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
+            test_pool_vs_per_chunk_2D(50); // Same n.o. vthreads in pool & per chunk 2D
+            test_pool_vs_per_chunk_3D(50); // Same n.o. vthreads in pool & per chunk 3D
+            test_iterate_select_threshold(50); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
         } catch (Exception e) {
             PrintWriter w = new PrintWriter(results_path+"error.txt");
@@ -265,7 +265,7 @@ public class Main {
 
     private static void test_pool_vs_per_chunk_3D(int tests_per_datapoint) throws FileNotFoundException {
         int TEST_NUM = tests_per_datapoint;
-        int MAX_DIM_DIVISOR = 6;
+        int MAX_DIM_DIVISOR = 7;
         PrintWriter writer_vthread = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d.csv");
         PrintWriter writer_platform = new PrintWriter(results_path + "test_pool_vs_chunk_platform_3d.csv");
         PrintWriter writer_vthread_bi = new PrintWriter(results_path + "test_pool_vs_chunk_vthread_3d_bi.csv");
