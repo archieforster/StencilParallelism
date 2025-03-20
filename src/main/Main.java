@@ -22,9 +22,9 @@ public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
         try {
-//            test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
-//            test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
-//            test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
+            test_pool_threads_with_chunks(1); // N.o. threads in pool for different n.o. chunks 2D - virtual and platform
+            test_pool_vs_per_chunk_2D(1); // Same n.o. vthreads in pool & per chunk 2D
+            test_pool_vs_per_chunk_3D(1); // Same n.o. vthreads in pool & per chunk 3D
             test_iterate_select_threshold(1); // Fullness of stencil for iterate & select in 3D
 //        test_conway_gol();
         } catch (Exception e) {
@@ -54,6 +54,7 @@ public class Main {
         long[][][] res_vthread_bi = new long[MAX_DIM_DIVISOR][MAX_THREAD_COUNT][TEST_NUM];
         long[][][] res_platform_bi = new long[MAX_DIM_DIVISOR][MAX_THREAD_COUNT][TEST_NUM];
         for (int t = 0; t < TEST_NUM; t++){
+            System.out.println("Experiment 1, Test " + t);
             for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
                 for (int thread_c = 1; thread_c <= MAX_THREAD_COUNT; thread_c++) {
                     res_vthread[dim_divisor-1][thread_c-1][t] = blur_giraffe_test(
@@ -138,6 +139,7 @@ public class Main {
         long[][] res_platform_bi = new long[MAX_DIM_DIVISOR][TEST_NUM];
 
         for (int t = 0; t < TEST_NUM; t++) {
+            System.out.println("Experiment 2a, Test " + t);
             for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
                 res_virtual[dim_divisor-1][t] = blur_giraffe_test(
                         ComputeMode.ITERATE,
@@ -199,6 +201,7 @@ public class Main {
         writer_platform_bi.flush();
 
         for (int t = 0; t < TEST_NUM; t++) {
+            System.out.println("Experiment 2b, Test " + t);
             for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
                 res_virtual[dim_divisor - 1][t] = blur_giraffe_test(
                         ComputeMode.ITERATE,
@@ -316,6 +319,7 @@ public class Main {
         long[][] res_platform_bi = new long[MAX_DIM_DIVISOR][TEST_NUM];
 
         for (int t = 0; t < TEST_NUM; t++) {
+            System.out.println("Experiment 3a, Test " + t);
             for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
                 res_virtual[dim_divisor-1][t] = computation_test_3d(
                         ComputeMode.SELECT,
@@ -381,6 +385,7 @@ public class Main {
         writer_platform_bi.flush();
 
         for (int t = 0; t < TEST_NUM; t++) {
+            System.out.println("Experiment 3b, Test " + t);
             for (int dim_divisor = 1; dim_divisor <= MAX_DIM_DIVISOR; dim_divisor++) {
                 res_virtual[dim_divisor - 1][t] = computation_test_3d(
                         ComputeMode.SELECT,
@@ -453,6 +458,7 @@ public class Main {
         long[][] iterate_results = new long[(7*7)+1][TEST_NUM];
 
         for (int t = 0; t < TEST_NUM; t++) {
+            System.out.println("Experiment 4, Test " + t);
             for (int activations = 0; activations <= 7*7*7; activations+=7) {
                 final int total_activations;
                 if (activations == 0) {
